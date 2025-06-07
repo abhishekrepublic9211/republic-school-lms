@@ -8,6 +8,8 @@ export interface Assignment {
   courseName: string;
   dueDate: string;
   submissionDate?: string;
+  submissionUrl?: string;
+  submittedDate?: string;
   status: 'pending' | 'submitted' | 'graded' | 'overdue';
   grade?: number;
   maxGrade: number;
@@ -46,6 +48,7 @@ const mockAssignments: Assignment[] = [
     dueDate: '2024-02-15T23:59:00',
     status: 'pending',
     maxGrade: 100,
+    submissionUrl: null,
     type: 'assignment',
     priority: 'high',
     attachments: [
@@ -87,6 +90,8 @@ const mockAssignments: Assignment[] = [
     courseName: 'Digital Journalism Fundamentals',
     dueDate: '2024-02-08T23:59:00',
     submissionDate: '2024-02-07T18:30:00',
+    submissionUrl: '/submissions/interview_transcript_sarah.docx',
+    submittedDate: '2024-02-07T18:30:00',
     status: 'graded',
     grade: 88,
     maxGrade: 100,
@@ -113,6 +118,7 @@ const mockAssignments: Assignment[] = [
     dueDate: '2024-02-20T23:59:00',
     status: 'pending',
     maxGrade: 100,
+    submissionUrl: null,
     type: 'project',
     priority: 'low'
   }

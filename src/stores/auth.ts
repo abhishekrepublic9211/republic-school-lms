@@ -13,6 +13,10 @@ export interface User {
   bio?: string;
   phone?: string;
   location?: string;
+  department: string;
+  semester: string;
+  academicYear: string;
+  studentId: string;
 }
 
 export interface Achievement {
@@ -51,18 +55,59 @@ const mockUser: User = {
   joinDate: '2024-01-01',
   bio: 'Aspiring journalist passionate about investigative reporting and digital media.',
   phone: '+1 (555) 123-4567',
-  location: 'New York, NY'
+  location: 'New York, NY',
+  department: 'Journalism',
+  semester: 'Spring',
+  academicYear: '2024',
+  studentId: 'JOUR2024001'
 };
 
+// Create writable stores
 export const currentUser = writable<User | null>(null);
 export const isAuthenticated = writable<boolean>(false);
 
+// Check if we're in the browser
+const isBrowser = typeof window !== 'undefined';
+
+// Initialize from localStorage if in browser
+if (isBrowser) {
+  const storedUser = localStorage.getItem('currentUser');
+  const storedAuth = localStorage.getItem('isAuthenticated');
+  
+  if (storedUser && storedAuth === 'true') {
+    try {
+      const user = JSON.parse(storedUser);
+      currentUser.set(user);
+      isAuthenticated.set(true);
+    } catch (error) {
+      console.error('Error parsing stored user:', error);
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('isAuthenticated');
+    }
+  }
+}
+
+// Subscribe to changes and update localStorage
+if (isBrowser) {
+  currentUser.subscribe(user => {
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  });
+
+  isAuthenticated.subscribe(auth => {
+    localStorage.setItem('isAuthenticated', auth.toString());
+  });
+}
+
+// Authentication functions
 export function login(email: string, password: string): boolean {
   // Mock login - in real app, this would make an API call
   if (email && password) {
     currentUser.set(mockUser);
     isAuthenticated.set(true);
-    localStorage.setItem('currentUser', JSON.stringify(mockUser));
     return true;
   }
   return false;
@@ -71,5 +116,12 @@ export function login(email: string, password: string): boolean {
 export function logout(): void {
   currentUser.set(null);
   isAuthenticated.set(false);
-  localStorage.removeItem('currentUser');
+  if (isBrowser) {
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isAuthenticated');
+  }
+}
+
+export function updateUser(user: User): void {
+  currentUser.set(user);
 }

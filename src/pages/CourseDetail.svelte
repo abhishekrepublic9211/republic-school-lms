@@ -3,11 +3,15 @@
   import { Star, Users, Clock, BookOpen, Play, Download, CheckCircle, Lock } from 'lucide-svelte';
   import Layout from '../components/Layout.svelte';
   import { courses, selectedCourse } from '../stores/courses';
+  import { lectures } from '../stores/lectures';
 
   export let params: { id: string };
 
   let activeTab = 'overview';
   let currentLesson = 0;
+  
+  // Get lectures for this course
+  $: courseLectures = $lectures.filter(lecture => lecture.courseId === params.id);
 
   onMount(() => {
     const course = $courses.find(c => c.id === params.id);
@@ -83,6 +87,9 @@
               <span class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-700">
                 {$selectedCourse.level}
               </span>
+              <span class="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-700">
+                {$selectedCourse.courseCode}
+              </span>
             </div>
             
             <h1 class="text-3xl font-bold text-gray-900 mb-4">{$selectedCourse.title}</h1>
@@ -106,7 +113,22 @@
                 <Clock class="w-5 h-5 text-gray-400" />
                 <span class="text-gray-600">{$selectedCourse.duration}</span>
               </div>
+              <div class="flex items-center space-x-1">
+                <BookOpen class="w-5 h-5 text-gray-400" />
+                <span class="text-gray-600">{$selectedCourse.credits} credits</span>
+              </div>
             </div>
+            
+            {#if $selectedCourse.schedule}
+              <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">Class Schedule</h4>
+                <div class="text-sm text-gray-600">
+                  <div><strong>Days:</strong> {$selectedCourse.schedule.days.join(', ')}</div>
+                  <div><strong>Time:</strong> {$selectedCourse.schedule.time}</div>
+                  <div><strong>Venue:</strong> {$selectedCourse.schedule.venue}</div>
+                </div>
+              </div>
+            {/if}
             
             {#if $selectedCourse.isEnrolled && $selectedCourse.progress !== undefined}
               <div class="mb-6">
@@ -165,6 +187,10 @@
                   <span class="font-medium">{$selectedCourse.level}</span>
                 </div>
                 <div class="flex items-center justify-between">
+                  <span class="text-gray-600">Credits</span>
+                  <span class="font-medium">{$selectedCourse.credits}</span>
+                </div>
+                <div class="flex items-center justify-between">
                   <span class="text-gray-600">Certificate</span>
                   <span class="font-medium">Yes</span>
                 </div>
@@ -189,6 +215,12 @@
               on:click={() => activeTab = 'curriculum'}
             >
               Curriculum
+            </button>
+            <button 
+              class="py-4 px-1 border-b-2 font-medium text-sm {activeTab === 'lectures' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}"
+              on:click={() => activeTab = 'lectures'}
+            >
+              Lecture Schedule
             </button>
             <button 
               class="py-4 px-1 border-b-2 font-medium text-sm {activeTab === 'instructor' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}"
@@ -285,6 +317,88 @@
                   </div>
                 {/each}
               </div>
+            </div>
+          
+          {:else if activeTab === 'lectures'}
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-6">Lecture Schedule</h3>
+              {#if courseLectures.length > 0}
+                <div class="space-y-4">
+                  {#each courseLectures as lecture}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                      <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                          <h4 class="font-semibold text-gray-900 mb-2">{lecture.title}</h4>
+                          <p class="text-sm text-gray-600 mb-3">{lecture.description}</p>
+                          
+                          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span class="text-gray-500">Date:</span>
+                              <div class="font-medium">{new Date(lecture.date).toLocaleDateString()}</div>
+                            </div>
+                            <div>
+                              <span class="text-gray-500">Time:</span>
+                              <div class="font-medium">{lecture.time}</div>
+                            </div>
+                            <div>
+                              <span class="text-gray-500">Duration:</span>
+                              <div class="font-medium">{lecture.duration}</div>
+                            </div>
+                            <div>
+                              <span class="text-gray-500">Venue:</span>
+                              <div class="font-medium">{lecture.venue}</div>
+                            </div>
+                          </div>
+                          
+                          {#if lecture.materials.length > 0}
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                              <span class="text-sm text-gray-600 mb-2 block">Materials:</span>
+                              <div class="flex flex-wrap gap-2">
+                                {#each lecture.materials as material}
+                                  <a 
+                                    href={material.url} 
+                                    class="inline-flex items-center space-x-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full hover:bg-blue-100 transition-colors duration-200"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Download class="w-3 h-3" />
+                                    <span>{material.title}</span>
+                                  </a>
+                                {/each}
+                              </div>
+                            </div>
+                          {/if}
+                          
+                          {#if lecture.attendanceCount !== undefined}
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                              <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Attendance:</span>
+                                <span class="font-medium text-gray-900">
+                                  {lecture.attendanceCount}/{lecture.totalStudents} students
+                                </span>
+                              </div>
+                            </div>
+                          {/if}
+                        </div>
+                        
+                        <div class="ml-4">
+                          <a 
+                            href="#/lectures/{lecture.id}" 
+                            class="btn btn-primary text-sm px-4 py-2"
+                          >
+                            View Details
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {:else}
+                <div class="text-center py-8 text-gray-500">
+                  <BookOpen class="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No lectures scheduled yet</p>
+                </div>
+              {/if}
             </div>
           
           {:else if activeTab === 'instructor'}

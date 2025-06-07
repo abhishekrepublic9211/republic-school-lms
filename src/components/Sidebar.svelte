@@ -8,7 +8,11 @@
     HelpCircle, 
     Settings, 
     User,
-    CreditCard
+    CreditCard,
+    Users,
+    CheckSquare,
+    BarChart3,
+    MessageSquare
   } from 'lucide-svelte';
   import { currentUser } from '../stores/auth';
 
@@ -19,9 +23,13 @@
     { href: '#/profile', label: 'Profile', icon: User },
     { href: '#/courses', label: 'Courses', icon: BookOpen },
     { href: '#/assignments', label: 'Assignments', icon: FileText },
+    { href: '#/lectures', label: 'Lectures', icon: Users },
+    { href: '#/attendance', label: 'Attendance', icon: CheckSquare },
+    { href: '#/grades', label: 'Grades', icon: BarChart3 },
     { href: '#/calendar', label: 'Calendar', icon: Calendar },
     { href: '#/chat', label: 'Chat', icon: MessageCircle },
     { href: '#/doubts', label: 'Doubts', icon: HelpCircle },
+    { href: '#/feedback', label: 'Feedback', icon: MessageSquare },
     { href: '#/payments', label: 'Payments', icon: CreditCard },
     { href: '#/settings', label: 'Settings', icon: Settings }
   ];
@@ -45,7 +53,7 @@
 
 <!-- Sidebar -->
 <aside 
-  class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 lg:translate-x-0 {isOpen ? 'translate-x-0' : '-translate-x-full'}"
+  class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 lg:translate-x-0 {isOpen ? 'translate-x-0' : '-translate-x-full'}"
   role="navigation"
   aria-label="Main navigation"
 >

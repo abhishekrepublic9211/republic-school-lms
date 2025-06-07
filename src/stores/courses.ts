@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import type { Lecture } from './lectures';
 
 export interface Course {
   id: string;
@@ -9,15 +10,26 @@ export interface Course {
   duration: string;
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   category: string;
+  department: string;
+  semester: string;
+  academicYear: string;
+  courseCode: string;
+  credits: number;
   thumbnail: string;
   price: number;
   rating: number;
   studentsEnrolled: number;
   lessons: Lesson[];
+  lectures: string[]; // Array of lecture IDs
   syllabus: string[];
   progress?: number;
   isEnrolled?: boolean;
   completionDate?: string;
+  schedule?: {
+    days: string[];
+    time: string;
+    venue: string;
+  };
 }
 
 export interface Lesson {
@@ -49,12 +61,23 @@ const mockCourses: Course[] = [
     duration: '8 weeks',
     level: 'Beginner',
     category: 'Digital Media',
+    department: 'Journalism',
+    semester: 'Spring',
+    academicYear: '2024',
+    courseCode: 'JOUR 101',
+    credits: 3,
     thumbnail: 'https://images.pexels.com/photos/97080/pexels-photo-97080.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1',
     price: 299,
     rating: 4.8,
     studentsEnrolled: 1247,
     progress: 65,
     isEnrolled: true,
+    lectures: ['1', '2'],
+    schedule: {
+      days: ['Monday', 'Wednesday'],
+      time: '09:00-10:30',
+      venue: 'Room 101, Media Building'
+    },
     lessons: [
       {
         id: '1',
@@ -110,12 +133,23 @@ const mockCourses: Course[] = [
     duration: '12 weeks',
     level: 'Advanced',
     category: 'Investigative',
+    department: 'Journalism',
+    semester: 'Spring',
+    academicYear: '2024',
+    courseCode: 'JOUR 401',
+    credits: 4,
     thumbnail: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1',
     price: 599,
     rating: 4.9,
     studentsEnrolled: 543,
     progress: 30,
     isEnrolled: true,
+    lectures: ['3'],
+    schedule: {
+      days: ['Tuesday', 'Thursday'],
+      time: '14:00-16:00',
+      venue: 'Room 205, Media Building'
+    },
     lessons: [
       {
         id: '1',
@@ -152,11 +186,22 @@ const mockCourses: Course[] = [
     duration: '10 weeks',
     level: 'Intermediate',
     category: 'Broadcast',
+    department: 'Journalism',
+    semester: 'Spring',
+    academicYear: '2024',
+    courseCode: 'JOUR 301',
+    credits: 3,
     thumbnail: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1',
     price: 449,
     rating: 4.7,
     studentsEnrolled: 892,
     isEnrolled: false,
+    lectures: [],
+    schedule: {
+      days: ['Monday', 'Wednesday', 'Friday'],
+      time: '11:00-12:00',
+      venue: 'Studio A, Media Building'
+    },
     lessons: [],
     syllabus: [
       'Broadcast Writing Fundamentals',

@@ -1,11 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { BookOpen, FileText, Calendar as CalendarIcon, TrendingUp, Clock, Award } from 'lucide-svelte';
+  import { BookOpen, FileText, Calendar as CalendarIcon, TrendingUp, Clock, Award, Users, CheckSquare, BarChart3 } from 'lucide-svelte';
   import Layout from '../components/Layout.svelte';
   import { courses } from '../stores/courses';
   import { assignments } from '../stores/assignments';
+  import { lectures } from '../stores/lectures';
+  import { attendanceSummaries } from '../stores/attendance';
+  import { gradeEntries } from '../stores/grades';
   import { currentUser } from '../stores/auth';
 
+  // Recent activity combining multiple data sources
   let recentActivity = [
     {
       type: 'course',
@@ -27,10 +31,46 @@
       course: 'Digital Journalism Fundamentals',
       time: '2 days ago',
       icon: Award
+    },
+    {
+      type: 'lecture',
+      title: 'Attended: Advanced Source Protection',
+      course: 'Investigative Reporting Masterclass',
+      time: '3 days ago',
+      icon: Users
     }
   ];
 
-  let upcomingDeadlines = [
+  // Get upcoming lectures for the current user
+  $: upcomingLectures = $lectures
+    .filter(lecture => {
+      const lectureDate = new Date(lecture.date);
+      const today = new Date();
+      return lectureDate >= today;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 3);
+
+  // Combine assignments and lectures for upcoming deadlines
+  $: upcomingDeadlines = [
+    ...$assignments
+      .filter(assignment => assignment.status === 'pending')
+      .map(assignment => ({
+        title: assignment.title,
+        course: assignment.courseName,
+        dueDate: assignment.dueDate,
+        type: 'assignment' as const
+      })),
+    ...upcomingLectures.map(lecture => ({
+      title: lecture.title,
+      course: lecture.courseName,
+      dueDate: `${lecture.date}T${lecture.time}:00`,
+      type: 'lecture' as const
+    }))
+  ].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 4);
+
+  // Original upcoming deadlines for assignments only
+  let assignmentDeadlines = [
     {
       title: 'Digital News Article Analysis',
       course: 'Digital Journalism Fundamentals',
@@ -47,6 +87,10 @@
 
   $: enrolledCourses = $courses.filter(course => course.isEnrolled);
   $: pendingAssignments = $assignments.filter(assignment => assignment.status === 'pending');
+  $: overallAttendance = $attendanceSummaries.length > 0 
+    ? Math.round($attendanceSummaries.reduce((sum, summary) => sum + summary.attendancePercentage, 0) / $attendanceSummaries.length)
+    : 0;
+  $: recentGrades = $gradeEntries.slice(0, 3);
   $: averageProgress = enrolledCourses.length > 0 
     ? Math.round(enrolledCourses.reduce((sum, course) => sum + (course.progress || 0), 0) / enrolledCourses.length)
     : 0;
@@ -56,8 +100,15 @@
   <div class="p-6 space-y-6">
     <!-- Welcome Header -->
     <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
-      <h1 class="text-2xl font-bold mb-2">Welcome back, {$currentUser?.name}!</h1>
+      <h1 class="text-2xl font-bold mb-2">Welcome back, {$currentUser?.name || 'Student'}!</h1>
       <p class="text-primary-100">Ready to continue your journalism journey? Let's see what's new today.</p>
+      {#if $currentUser}
+        <div class="mt-3 text-sm text-primary-100">
+          <span class="font-medium">{$currentUser.department}</span> • 
+          <span>{$currentUser.semester} {$currentUser.academicYear}</span> • 
+          <span>ID: {$currentUser.studentId}</span>
+        </div>
+      {/if}
     </div>
 
     <!-- Stats Overview -->
@@ -89,11 +140,11 @@
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">Average Progress</p>
-            <p class="text-2xl font-bold text-gray-900">{averageProgress}%</p>
+            <p class="text-sm font-medium text-gray-600">Attendance Rate</p>
+            <p class="text-2xl font-bold text-gray-900">{overallAttendance}%</p>
           </div>
-          <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
-            <TrendingUp class="w-6 h-6 text-success-600" />
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <CheckSquare class="w-6 h-6 text-blue-600" />
           </div>
         </div>
       </div>
@@ -101,11 +152,11 @@
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">Achievements</p>
-            <p class="text-2xl font-bold text-gray-900">{$currentUser?.achievements?.length || 0}</p>
+            <p class="text-sm font-medium text-gray-600">Course Progress</p>
+            <p class="text-2xl font-bold text-gray-900">{averageProgress}%</p>
           </div>
-          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-            <Award class="w-6 h-6 text-yellow-600" />
+          <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
+            <TrendingUp class="w-6 h-6 text-success-600" />
           </div>
         </div>
       </div>
@@ -128,7 +179,8 @@
                   />
                   <div class="flex-1">
                     <h3 class="font-semibold text-gray-900 mb-1">{course.title}</h3>
-                    <p class="text-sm text-gray-600 mb-2">by {course.instructor}</p>
+                    <p class="text-sm text-gray-600 mb-1">by {course.instructor}</p>
+                    <p class="text-xs text-gray-500 mb-2">{course.courseCode} • {course.credits} credits</p>
                     <div class="flex items-center justify-between">
                       <div class="flex-1 mr-4">
                         <div class="flex items-center justify-between mb-1">
@@ -180,6 +232,31 @@
           </a>
         </div>
 
+        <!-- Recent Grades -->
+        <div class="card p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Grades</h3>
+          <div class="space-y-3">
+            {#each recentGrades as grade}
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-success-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <BarChart3 class="w-4 h-4 text-success-600" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900 text-sm">{grade.assignmentTitle}</p>
+                  <p class="text-xs text-gray-600">{grade.courseName}</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-xs text-gray-500">Score</span>
+                    <span class="text-sm font-bold text-success-600">{grade.score}/{grade.maxScore}</span>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+          <a href="#/grades" class="block mt-4 text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+            View All Grades
+          </a>
+        </div>
+
         <!-- Recent Activity -->
         <div class="card p-6">
           <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
@@ -208,6 +285,9 @@
             </a>
             <a href="#/assignments" class="w-full btn btn-secondary text-sm py-2">
               View Assignments
+            </a>
+            <a href="#/lectures" class="w-full btn btn-secondary text-sm py-2">
+              Today's Lectures
             </a>
             <a href="#/chat" class="w-full btn btn-secondary text-sm py-2">
               Join Discussion
