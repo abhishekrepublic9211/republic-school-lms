@@ -53,9 +53,9 @@ const mockUser: User = {
     }
   ],
   joinDate: '2024-01-01',
-  bio: 'Aspiring journalist passionate about investigative reporting and digital media.',
-  phone: '+1 (555) 123-4567',
-  location: 'New York, NY',
+  bio: null,
+  phone: null,
+  location: null,
   department: 'Journalism',
   semester: 'Spring',
   academicYear: '2024',
@@ -103,9 +103,35 @@ if (isBrowser) {
 }
 
 // Authentication functions
-export function login(email: string, password: string): boolean {
-  // Mock login - in real app, this would make an API call
-  if (email && password) {
+export function sendOTP(email: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Mock OTP sending - in real app, this would make an API call
+    setTimeout(() => {
+      if (email && email.includes('@')) {
+        // Store the OTP in localStorage for demo purposes
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        localStorage.setItem('demo_otp', otp);
+        localStorage.setItem('demo_email', email);
+        console.log('Demo OTP sent:', otp); // In real app, this would be sent via email
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    }, 1000);
+  });
+}
+
+export function verifyOTP(email: string, otp: string): boolean {
+  // Mock OTP verification - in real app, this would make an API call
+  const storedOTP = localStorage.getItem('demo_otp');
+  const storedEmail = localStorage.getItem('demo_email');
+  
+  if (email === storedEmail && otp === storedOTP) {
+    // Clear the OTP after successful verification
+    localStorage.removeItem('demo_otp');
+    localStorage.removeItem('demo_email');
+    
+    // Set user as authenticated
     currentUser.set(mockUser);
     isAuthenticated.set(true);
     return true;

@@ -1,18 +1,57 @@
 <script lang="ts">
-  import { login } from '../stores/auth';
+  import { sendOTP, verifyOTP } from '../stores/auth';
   import { push } from 'svelte-spa-router';
-  import { Eye, EyeOff, Mail, Lock } from 'lucide-svelte';
+  import { Mail, ArrowRight, RefreshCw } from 'lucide-svelte';
   import Layout from '../components/Layout.svelte';
 
   let email = '';
-  let password = '';
-  let showPassword = false;
+  let otp = '';
+  let step = 'email'; // 'email' or 'otp'
   let isLoading = false;
   let error = '';
+  let otpSent = false;
+  let countdown = 0;
+  let countdownInterval: number;
 
-  async function handleLogin() {
-    if (!email || !password) {
-      error = 'Please fill in all fields';
+  async function handleSendOTP() {
+    if (!email) {
+      error = 'Please enter your email address';
+      return;
+    }
+
+    if (!email.includes('@')) {
+      error = 'Please enter a valid email address';
+      return;
+    }
+
+    isLoading = true;
+    error = '';
+
+    try {
+      const success = await sendOTP(email);
+      
+      if (success) {
+        step = 'otp';
+        otpSent = true;
+        startCountdown();
+      } else {
+        error = 'Failed to send OTP. Please try again.';
+      }
+    } catch (err) {
+      error = 'Something went wrong. Please try again.';
+    }
+    
+    isLoading = false;
+  }
+
+  async function handleVerifyOTP() {
+    if (!otp) {
+      error = 'Please enter the OTP';
+      return;
+    }
+
+    if (otp.length !== 6) {
+      error = 'OTP must be 6 digits';
       return;
     }
 
@@ -22,19 +61,75 @@
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const success = login(email, password);
+    const success = verifyOTP(email, otp);
     
     if (success) {
       push('/dashboard');
     } else {
-      error = 'Invalid email or password';
+      error = 'Invalid OTP. Please try again.';
+      otp = '';
     }
     
     isLoading = false;
   }
 
-  function togglePasswordVisibility() {
-    showPassword = !showPassword;
+  function startCountdown() {
+    countdown = 60;
+    countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+  }
+
+  async function resendOTP() {
+    if (countdown > 0) return;
+    
+    isLoading = true;
+    error = '';
+    
+    try {
+      const success = await sendOTP(email);
+      if (success) {
+        startCountdown();
+        error = '';
+      } else {
+        error = 'Failed to resend OTP. Please try again.';
+      }
+    } catch (err) {
+      error = 'Something went wrong. Please try again.';
+    }
+    
+    isLoading = false;
+  }
+
+  function goBackToEmail() {
+    step = 'email';
+    otp = '';
+    error = '';
+    otpSent = false;
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+    }
+  }
+
+  function handleOTPInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const value = target.value.replace(/\D/g, ''); // Only allow digits
+    if (value.length <= 6) {
+      otp = value;
+    }
+  }
+
+  function handleKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      if (step === 'email') {
+        handleSendOTP();
+      } else {
+        handleVerifyOTP();
+      }
+    }
   }
 </script>
 
@@ -45,13 +140,20 @@
         <div class="w-16 h-16 bg-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4">
           <span class="text-white font-bold text-2xl">R</span>
         </div>
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-        <p class="text-gray-600">Sign in to your Republic School of Journalism account</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">
+          {step === 'email' ? 'Welcome Back' : 'Verify Your Email'}
+        </h2>
+        <p class="text-gray-600">
+          {step === 'email' 
+            ? 'Sign in to your Republic School of Journalism account' 
+            : `We've sent a 6-digit code to ${email}`
+          }
+        </p>
       </div>
 
-      <form class="mt-8 space-y-6" on:submit|preventDefault={handleLogin}>
-        <div class="space-y-4">
-          <!-- Email Field -->
+      <form class="mt-8 space-y-6" on:submit|preventDefault={step === 'email' ? handleSendOTP : handleVerifyOTP}>
+        {#if step === 'email'}
+          <!-- Email Step -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -62,6 +164,7 @@
                 id="email"
                 type="email"
                 bind:value={email}
+                on:keydown={handleKeyPress}
                 required
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
                 placeholder="Enter your email"
@@ -69,94 +172,114 @@
             </div>
           </div>
 
-          <!-- Password Field -->
+          <!-- Error Message -->
+          {#if error}
+            <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          {/if}
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            disabled={isLoading}
+            class="w-full btn btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {#if isLoading}
+              <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Sending OTP...</span>
+            {:else}
+              <span>Send OTP</span>
+              <ArrowRight class="w-5 h-5" />
+            {/if}
+          </button>
+
+        {:else}
+          <!-- OTP Step -->
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-              Password
+            <label for="otp" class="block text-sm font-medium text-gray-700 mb-1">
+              Enter 6-Digit Code
             </label>
-            <div class="relative">
-              <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              {#if showPassword}
-                <input
-                  id="password"
-                  type="text"
-                  bind:value={password}
-                  required
-                  class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
-                  placeholder="Enter your password"
-                />
-              {:else}
-                <input
-                  id="password"
-                  type="password"
-                  bind:value={password}
-                  required
-                  class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
-                  placeholder="Enter your password"
-                />
-              {/if}
+            <input
+              id="otp"
+              type="text"
+              bind:value={otp}
+              on:input={handleOTPInput}
+              on:keydown={handleKeyPress}
+              maxlength="6"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-center text-2xl font-mono tracking-widest"
+              placeholder="000000"
+            />
+            <p class="text-xs text-gray-500 mt-2 text-center">
+              Enter the 6-digit code sent to your email
+            </p>
+          </div>
+
+          <!-- Error Message -->
+          {#if error}
+            <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          {/if}
+
+          <!-- Resend OTP -->
+          <div class="text-center">
+            {#if countdown > 0}
+              <p class="text-sm text-gray-500">
+                Resend OTP in <span class="font-medium text-primary-600">{countdown}s</span>
+              </p>
+            {:else}
               <button
                 type="button"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                on:click={togglePasswordVisibility}
+                on:click={resendOTP}
+                disabled={isLoading}
+                class="text-sm text-primary-600 hover:text-primary-500 font-medium disabled:opacity-50 flex items-center space-x-1 mx-auto"
               >
-                {#if showPassword}
-                  <EyeOff class="w-5 h-5" />
-                {:else}
-                  <Eye class="w-5 h-5" />
-                {/if}
+                <RefreshCw class="w-4 h-4" />
+                <span>Resend OTP</span>
               </button>
-            </div>
+            {/if}
           </div>
-        </div>
 
-        <!-- Error Message -->
-        {#if error}
-          <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-            {error}
-          </div>
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            disabled={isLoading || otp.length !== 6}
+            class="w-full btn btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {#if isLoading}
+              <div class="flex items-center justify-center space-x-2">
+                <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Verifying...</span>
+              </div>
+            {:else}
+              Verify & Sign In
+            {/if}
+          </button>
+
+          <!-- Back Button -->
+          <button
+            type="button"
+            on:click={goBackToEmail}
+            class="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium"
+          >
+            ← Back to email
+          </button>
         {/if}
 
-        <!-- Remember Me & Forgot Password -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              id="remember-me"
-              type="checkbox"
-              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
-              Remember me
-            </label>
-          </div>
-          <button type="button" class="text-sm text-primary-600 hover:text-primary-500">
-            Forgot password?
-          </button>
-        </div>
-
-        <!-- Submit Button -->
-        <button
-          type="submit"
-          disabled={isLoading}
-          class="w-full btn btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {#if isLoading}
-            <div class="flex items-center justify-center space-x-2">
-              <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Signing in...</span>
-            </div>
-          {:else}
-            Sign In
-          {/if}
-        </button>
-
-        <!-- Demo Credentials -->
+        <!-- Demo Instructions -->
         <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 class="text-sm font-medium text-blue-900 mb-2">Demo Credentials:</h4>
-          <p class="text-sm text-blue-700">
-            Email: <code class="bg-blue-100 px-1 rounded">demo@example.com</code><br>
-            Password: <code class="bg-blue-100 px-1 rounded">password</code>
-          </p>
+          <h4 class="text-sm font-medium text-blue-900 mb-2">Demo Instructions:</h4>
+          {#if step === 'email'}
+            <p class="text-sm text-blue-700">
+              Enter any valid email address to receive an OTP. Check the browser console for the demo OTP code.
+            </p>
+          {:else}
+            <p class="text-sm text-blue-700">
+              Check the browser console (F12) for the 6-digit OTP code to complete the login.
+            </p>
+          {/if}
         </div>
 
         <!-- Sign Up Link -->
