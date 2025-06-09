@@ -1,4 +1,6 @@
 import { writable } from 'svelte/store';
+import { authAPI } from '$lib/api/auth';
+import type { ApiError } from '$lib/api/client';
 
 export interface User {
   id: string;
@@ -65,6 +67,8 @@ const mockUser: User = {
 // Create writable stores
 export const currentUser = writable<User | null>(null);
 export const isAuthenticated = writable<boolean>(false);
+export const authLoading = writable<boolean>(false);
+export const authError = writable<string | null>(null);
 
 // Check if we're in the browser
 const isBrowser = typeof window !== 'undefined';
@@ -103,51 +107,134 @@ if (isBrowser) {
 }
 
 // Authentication functions
-export function sendOTP(email: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    // Mock OTP sending - in real app, this would make an API call
-    setTimeout(() => {
-      if (email && email.includes('@')) {
-        // Store the OTP in localStorage for demo purposes
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('demo_otp', otp);
-        localStorage.setItem('demo_email', email);
-        console.log('Demo OTP sent:', otp); // In real app, this would be sent via email
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    }, 1000);
-  });
-}
-
-export function verifyOTP(email: string, otp: string): boolean {
-  // Mock OTP verification - in real app, this would make an API call
-  const storedOTP = localStorage.getItem('demo_otp');
-  const storedEmail = localStorage.getItem('demo_email');
+export async function sendOTP(email: string): Promise<{ success: boolean; message?: string; attemptsRemaining?: number }> {
+  authLoading.set(true);
+  authError.set(null);
   
-  if (email === storedEmail && otp === storedOTP) {
-    // Clear the OTP after successful verification
-    localStorage.removeItem('demo_otp');
-    localStorage.removeItem('demo_email');
+  try {
+    const response = await authAPI.sendOTP(email);
     
-    // Set user as authenticated
-    currentUser.set(mockUser);
-    isAuthenticated.set(true);
-    return true;
+    if (response.success) {
+      // Store email for OTP verification
+      localStorage.setItem('pending_email', email);
+      return {
+        success: true,
+        message: response.data?.message || 'OTP sent successfully',
+        attemptsRemaining: response.data?.attemptsRemaining
+      };
+    } else {
+      authError.set(response.message || 'Failed to send OTP');
+      return { success: false, message: response.message };
+    }
+  } catch (error: any) {
+    const errorMessage = error.message || 'Failed to send OTP. Please try again.';
+    authError.set(errorMessage);
+    return { success: false, message: errorMessage };
+  } finally {
+    authLoading.set(false);
   }
-  return false;
 }
 
-export function logout(): void {
-  currentUser.set(null);
-  isAuthenticated.set(false);
-  if (isBrowser) {
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('isAuthenticated');
+export async function verifyOTP(email: string, otp: string): Promise<{ success: boolean; message?: string }> {
+  authLoading.set(true);
+  authError.set(null);
+  
+  try {
+    const response = await authAPI.verifyOTP({ email, otp });
+    
+    if (response.success && response.data) {
+      // Set user as authenticated
+      currentUser.set(response.data.user);
+      isAuthenticated.set(true);
+      
+      // Clear pending email
+      localStorage.removeItem('pending_email');
+      
+      return { success: true, message: 'Login successful' };
+    } else {
+      authError.set(response.message || 'Invalid OTP');
+      return { success: false, message: response.message };
+    }
+  } catch (error: any) {
+    const errorMessage = error.message || 'Invalid OTP. Please try again.';
+    authError.set(errorMessage);
+    return { success: false, message: errorMessage };
+  } finally {
+    authLoading.set(false);
+  }
+}
+
+export async function logout(): Promise<void> {
+  authLoading.set(true);
+  authError.set(null);
+  
+  try {
+    await authAPI.logout();
+  } catch (error: any) {
+    console.error('Logout error:', error);
+    // Continue with local logout even if API call fails
+  } finally {
+    // Clear local state
+    currentUser.set(null);
+    isAuthenticated.set(false);
+    authLoading.set(false);
+    
+    if (isBrowser) {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('pending_email');
+    }
   }
 }
 
 export function updateUser(user: User): void {
   currentUser.set(user);
+}
+
+// Initialize authentication state from stored tokens
+export async function initializeAuth(): Promise<void> {
+  if (!isBrowser) return;
+  
+  authLoading.set(true);
+  
+  try {
+    const hasValidToken = await authAPI.ensureValidToken();
+    
+    if (hasValidToken) {
+      // Get current user data from API
+      const response = await authAPI.getCurrentUser();
+      
+      if (response.success && response.data) {
+        currentUser.set(response.data);
+        isAuthenticated.set(true);
+      } else {
+        // Invalid token, clear auth state
+        currentUser.set(null);
+        isAuthenticated.set(false);
+      }
+    } else {
+      // No valid token
+      currentUser.set(null);
+      isAuthenticated.set(false);
+    }
+  } catch (error: any) {
+    console.error('Auth initialization error:', error);
+    currentUser.set(null);
+    isAuthenticated.set(false);
+  } finally {
+    authLoading.set(false);
+  }
+}
+
+// Auto-refresh token periodically
+if (isBrowser) {
+  setInterval(async () => {
+    try {
+      await authAPI.ensureValidToken();
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      // Force logout on token refresh failure
+      logout();
+    }
+  }, 5 * 60 * 1000); // Check every 5 minutes
 }

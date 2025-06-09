@@ -1,12 +1,17 @@
 <script lang="ts">
+  import type { PageData } from './$types';
   import { onMount } from 'svelte';
   import { BookOpen, FileText, Calendar as CalendarIcon, TrendingUp, Clock, Award, Users, CheckSquare, BarChart3 } from 'lucide-svelte';
-  import { courses } from '$lib/stores/courses';
-  import { assignments } from '$lib/stores/assignments';
-  import { lectures } from '$lib/stores/lectures';
-  import { attendanceSummaries } from '$lib/stores/attendance';
-  import { gradeEntries } from '$lib/stores/grades';
   import { currentUser } from '$lib/stores/auth';
+
+  export let data: PageData;
+
+  // Use data from load function
+  $: courses = data.courses || [];
+  $: assignments = data.assignments || [];
+  $: grades = data.grades || [];
+  $: attendance = data.attendance || [];
+  $: loadError = data.error;
 
   // Recent activity combining multiple data sources
   let recentActivity = [
@@ -41,7 +46,7 @@
   ];
 
   // Get upcoming lectures for the current user
-  $: upcomingLectures = $lectures
+  $: upcomingLectures = []
     .filter(lecture => {
       const lectureDate = new Date(lecture.date);
       const today = new Date();
@@ -52,7 +57,7 @@
 
   // Combine assignments and lectures for upcoming deadlines
   $: upcomingDeadlines = [
-    ...$assignments
+    ...assignments
       .filter(assignment => assignment.status === 'pending')
       .map(assignment => ({
         title: assignment.title,
@@ -68,12 +73,12 @@
     }))
   ].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 4);
 
-  $: enrolledCourses = $courses.filter(course => course.isEnrolled);
-  $: pendingAssignments = $assignments.filter(assignment => assignment.status === 'pending');
-  $: overallAttendance = $attendanceSummaries.length > 0 
-    ? Math.round($attendanceSummaries.reduce((sum, summary) => sum + summary.attendancePercentage, 0) / $attendanceSummaries.length)
+  $: enrolledCourses = courses.filter(course => course.isEnrolled);
+  $: pendingAssignments = assignments.filter(assignment => assignment.status === 'pending');
+  $: overallAttendance = attendance.length > 0 
+    ? Math.round(attendance.reduce((sum, summary) => sum + summary.attendancePercentage, 0) / attendance.length)
     : 0;
-  $: recentGrades = $gradeEntries.slice(0, 3);
+  $: recentGrades = grades.slice(0, 3);
   $: averageProgress = enrolledCourses.length > 0 
     ? Math.round(enrolledCourses.reduce((sum, course) => sum + (course.progress || 0), 0) / enrolledCourses.length)
     : 0;
@@ -84,6 +89,14 @@
 </svelte:head>
 
 <div class="p-6 space-y-6">
+  <!-- Error Message -->
+  {#if loadError}
+    <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
+      <p class="text-sm font-medium">Error Loading Dashboard</p>
+      <p class="text-sm">{loadError}</p>
+    </div>
+  {/if}
+
   <!-- Welcome Header -->
   <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
     <h1 class="text-2xl font-bold mb-2">Welcome back, {$currentUser?.name || 'Student'}!</h1>

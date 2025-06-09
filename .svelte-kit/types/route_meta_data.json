@@ -3,9 +3,13 @@
 	"/assignments": [],
 	"/attendance": [],
 	"/courses": [],
-	"/dashboard": [],
+	"/dashboard": [
+		"src/routes/dashboard/+page.ts"
+	],
 	"/grades": [],
 	"/lectures": [],
 	"/login": [],
-	"/profile": []
+	"/profile": [
+		"src/routes/profile/+page.ts"
+	]
 }

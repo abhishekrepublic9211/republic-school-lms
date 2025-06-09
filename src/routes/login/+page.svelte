@@ -1,16 +1,23 @@
 <script lang="ts">
-  import { sendOTP, verifyOTP } from '$lib/stores/auth';
+  import { sendOTP, verifyOTP, authLoading, authError } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
   import { Mail, ArrowRight, RefreshCw } from 'lucide-svelte';
 
   let email = '';
   let otp = '';
   let step = 'email'; // 'email' or 'otp'
-  let isLoading = false;
   let error = '';
   let otpSent = false;
   let countdown = 0;
   let countdownInterval: number;
+  let attemptsRemaining = 3;
+
+  // Subscribe to auth stores
+  $: isLoading = $authLoading;
+  $: if ($authError) {
+    error = $authError;
+  }
 
   async function handleSendOTP() {
     if (!email) {
@@ -23,24 +30,23 @@
       return;
     }
 
-    isLoading = true;
     error = '';
 
     try {
-      const success = await sendOTP(email);
+      const result = await sendOTP(email);
       
-      if (success) {
+      if (result.success) {
         step = 'otp';
         otpSent = true;
+        attemptsRemaining = result.attemptsRemaining || 3;
         startCountdown();
+        error = '';
       } else {
-        error = 'Failed to send OTP. Please try again.';
+        error = result.message || 'Failed to send OTP. Please try again.';
       }
     } catch (err) {
-      error = 'Something went wrong. Please try again.';
+      error = 'Network error. Please check your connection and try again.';
     }
-    
-    isLoading = false;
   }
 
   async function handleVerifyOTP() {
@@ -54,22 +60,28 @@
       return;
     }
 
-    isLoading = true;
     error = '';
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const success = verifyOTP(email, otp);
-    
-    if (success) {
-      goto('/dashboard');
-    } else {
-      error = 'Invalid OTP. Please try again.';
+    try {
+      const result = await verifyOTP(email, otp);
+      
+      if (result.success) {
+        goto('/dashboard');
+      } else {
+        error = result.message || 'Invalid OTP. Please try again.';
+        otp = '';
+        attemptsRemaining = Math.max(0, attemptsRemaining - 1);
+        
+        if (attemptsRemaining === 0) {
+          step = 'email';
+          otpSent = false;
+          error = 'Too many failed attempts. Please request a new OTP.';
+        }
+      }
+    } catch (err) {
+      error = 'Network error. Please check your connection and try again.';
       otp = '';
     }
-    
-    isLoading = false;
   }
 
   function startCountdown() {
@@ -85,22 +97,20 @@
   async function resendOTP() {
     if (countdown > 0) return;
     
-    isLoading = true;
     error = '';
     
     try {
-      const success = await sendOTP(email);
-      if (success) {
+      const result = await sendOTP(email);
+      if (result.success) {
         startCountdown();
+        attemptsRemaining = result.attemptsRemaining || 3;
         error = '';
       } else {
-        error = 'Failed to resend OTP. Please try again.';
+        error = result.message || 'Failed to resend OTP. Please try again.';
       }
     } catch (err) {
-      error = 'Something went wrong. Please try again.';
+      error = 'Network error. Please check your connection and try again.';
     }
-    
-    isLoading = false;
   }
 
   function goBackToEmail() {
@@ -108,6 +118,7 @@
     otp = '';
     error = '';
     otpSent = false;
+    attemptsRemaining = 3;
     if (countdownInterval) {
       clearInterval(countdownInterval);
     }
@@ -176,15 +187,55 @@
 
         <!-- Error Message -->
         {#if error}
+          <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg flex items-start space-x-2">
+            <div class="flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Error</p>
+              <p class="text-sm">{error}</p>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Success Message for OTP Sent -->
+        {#if otpSent && !error}
+          <div class="bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded-lg flex items-start space-x-2">
+            <div class="flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">OTP Sent Successfully</p>
+              <p class="text-sm">Please check your email for the verification code.</p>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Rate Limiting Info -->
+        {#if step === 'otp' && attemptsRemaining < 3}
+          <div class="bg-warning-50 border border-warning-200 text-warning-700 px-4 py-3 rounded-lg">
+            <p class="text-sm">
+              {attemptsRemaining} attempt{attemptsRemaining !== 1 ? 's' : ''} remaining
+            </p>
+          </div>
+        {/if}
+
+        <!-- Network Status -->
+        {#if browser && !navigator.onLine}
           <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-            {error}
+            <p class="text-sm font-medium">No Internet Connection</p>
+            <p class="text-sm">Please check your network connection and try again.</p>
           </div>
         {/if}
 
         <!-- Submit Button -->
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || (browser && !navigator.onLine)}
           class="w-full btn btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
           {#if isLoading}
@@ -210,7 +261,8 @@
             on:keydown={handleKeyPress}
             maxlength="6"
             required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-center text-2xl font-mono tracking-widest"
+            disabled={isLoading}
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-center text-2xl font-mono tracking-widest disabled:opacity-50"
             placeholder="000000"
           />
           <p class="text-xs text-gray-500 mt-2 text-center">
@@ -220,8 +272,25 @@
 
         <!-- Error Message -->
         {#if error}
-          <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-            {error}
+          <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg flex items-start space-x-2">
+            <div class="flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Verification Failed</p>
+              <p class="text-sm">{error}</p>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Attempts Remaining -->
+        {#if attemptsRemaining < 3 && attemptsRemaining > 0}
+          <div class="bg-warning-50 border border-warning-200 text-warning-700 px-4 py-3 rounded-lg">
+            <p class="text-sm">
+              {attemptsRemaining} attempt{attemptsRemaining !== 1 ? 's' : ''} remaining
+            </p>
           </div>
         {/if}
 
@@ -235,7 +304,7 @@
             <button
               type="button"
               on:click={resendOTP}
-              disabled={isLoading}
+              disabled={isLoading || (browser && !navigator.onLine)}
               class="text-sm text-primary-600 hover:text-primary-500 font-medium disabled:opacity-50 flex items-center space-x-1 mx-auto"
             >
               <RefreshCw class="w-4 h-4" />
@@ -247,7 +316,7 @@
         <!-- Submit Button -->
         <button
           type="submit"
-          disabled={isLoading || otp.length !== 6}
+          disabled={isLoading || otp.length !== 6 || (browser && !navigator.onLine)}
           class="w-full btn btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {#if isLoading}
@@ -264,32 +333,44 @@
         <button
           type="button"
           on:click={goBackToEmail}
-          class="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium"
+          disabled={isLoading}
+          class="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50"
         >
           ← Back to email
         </button>
       {/if}
 
-      <!-- Demo Instructions -->
-      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 class="text-sm font-medium text-blue-900 mb-2">Demo Instructions:</h4>
-        {#if step === 'email'}
-          <p class="text-sm text-blue-700">
-            Enter any valid email address to receive an OTP. Check the browser console for the demo OTP code.
+      <!-- Development Mode Notice -->
+      {#if import.meta.env.DEV}
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 class="text-sm font-medium text-blue-900 mb-2">Development Mode:</h4>
+          {#if step === 'email'}
+            <p class="text-sm text-blue-700">
+              In development, any valid email will work. The OTP will be logged to the console.
+            </p>
+          {:else}
+            <p class="text-sm text-blue-700">
+              Use OTP: <code class="font-mono bg-blue-100 px-1 rounded">123456</code> for testing.
+            </p>
+          {/if}
+        </div>
+      {/if}
+
+      <!-- API Status -->
+      {#if import.meta.env.DEV}
+        <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-xs text-gray-600">
+            API Endpoint: {import.meta.env.VITE_API_BASE_URL || 'https://api.republicschool.edu'}
           </p>
-        {:else}
-          <p class="text-sm text-blue-700">
-            Check the browser console (F12) for the 6-digit OTP code to complete the login.
-          </p>
-        {/if}
-      </div>
+        </div>
+      {/if}
 
       <!-- Sign Up Link -->
       <div class="text-center">
         <p class="text-sm text-gray-600">
           Don't have an account?
           <button type="button" class="text-primary-600 hover:text-primary-500 font-medium">
-            Sign up for free
+            Contact Admissions
           </button>
         </p>
       </div>

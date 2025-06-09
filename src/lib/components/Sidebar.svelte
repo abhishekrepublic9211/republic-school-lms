@@ -15,28 +15,44 @@
     MessageSquare
   } from 'lucide-svelte';
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
   import { currentUser } from '$lib/stores/auth';
+  import { activeNavItem, initializeNavigation, updateActiveNavigation, isPathActive } from '$lib/stores/navigation';
 
   export let isOpen = false;
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/profile', label: 'Profile', icon: User },
-    { href: '/courses', label: 'Courses', icon: BookOpen },
-    { href: '/assignments', label: 'Assignments', icon: FileText },
-    { href: '/lectures', label: 'Lectures', icon: Users },
-    { href: '/attendance', label: 'Attendance', icon: CheckSquare },
-    { href: '/grades', label: 'Grades', icon: BarChart3 },
-    { href: '/calendar', label: 'Calendar', icon: Calendar },
-    { href: '/chat', label: 'Chat', icon: MessageCircle },
-    { href: '/doubts', label: 'Doubts', icon: HelpCircle },
-    { href: '/feedback', label: 'Feedback', icon: MessageSquare },
-    { href: '/payments', label: 'Payments', icon: CreditCard },
-    { href: '/settings', label: 'Settings', icon: Settings }
+    { id: 'nav-dashboard', href: '/dashboard', label: 'Dashboard', icon: Home },
+    { id: 'nav-profile', href: '/profile', label: 'Profile', icon: User },
+    { id: 'nav-courses', href: '/courses', label: 'Courses', icon: BookOpen },
+    { id: 'nav-assignments', href: '/assignments', label: 'Assignments', icon: FileText },
+    { id: 'nav-lectures', href: '/lectures', label: 'Lectures', icon: Users },
+    { id: 'nav-attendance', href: '/attendance', label: 'Attendance', icon: CheckSquare },
+    { id: 'nav-grades', href: '/grades', label: 'Grades', icon: BarChart3 },
+    { id: 'nav-calendar', href: '/calendar', label: 'Calendar', icon: Calendar },
+    { id: 'nav-chat', href: '/chat', label: 'Chat', icon: MessageCircle },
+    { id: 'nav-doubts', href: '/doubts', label: 'Doubts', icon: HelpCircle },
+    { id: 'nav-feedback', href: '/feedback', label: 'Feedback', icon: MessageSquare },
+    { id: 'nav-payments', href: '/payments', label: 'Payments', icon: CreditCard },
+    { id: 'nav-settings', href: '/settings', label: 'Settings', icon: Settings }
   ];
 
-  function isActive(href: string): boolean {
-    return $page.url.pathname === href;
+  onMount(() => {
+    initializeNavigation();
+    
+    // Update navigation when page changes
+    const unsubscribe = page.subscribe(($page) => {
+      if ($page?.url?.pathname) {
+        updateActiveNavigation($page.url.pathname);
+      }
+    });
+    
+    return unsubscribe;
+  });
+
+  function handleNavClick(href: string) {
+    updateActiveNavigation(href);
+    isOpen = false;
   }
 </script>
 
@@ -83,14 +99,21 @@
       {#each navItems as item}
         <a
           href={item.href}
-          class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 {isActive(item.href) ? 'bg-primary-100 text-primary-700 border-r-4 border-primary-600' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
-          on:click={() => isOpen = false}
+          class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 nav-transition {isPathActive(item.href) ? 'nav-item-active' : 'nav-item-inactive'}"
+          on:click={() => handleNavClick(item.href)}
+          data-nav-id={item.id}
+          aria-current={isPathActive(item.href) ? 'page' : undefined}
         >
           <svelte:component 
             this={item.icon} 
-            class="w-5 h-5 {isActive(item.href) ? 'text-primary-600' : 'text-gray-400'}" 
+            class="w-5 h-5 transition-colors duration-200 {isPathActive(item.href) ? 'text-primary-600' : 'text-gray-400'}" 
           />
-          <span class="font-medium">{item.label}</span>
+          <span class="font-medium transition-colors duration-200">{item.label}</span>
+          
+          <!-- Active indicator -->
+          {#if isPathActive(item.href)}
+            <div class="ml-auto w-2 h-2 bg-primary-600 rounded-full animate-pulse-subtle"></div>
+          {/if}
         </a>
       {/each}
     </nav>
