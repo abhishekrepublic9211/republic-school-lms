@@ -17,6 +17,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>Republic School of Journalism - E-Learning Platform</title>
+</svelte:head>
+
 <div class="min-h-screen flex items-center justify-center bg-gray-50">
   <div class="text-center">
     <div class="w-16 h-16 bg-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4">

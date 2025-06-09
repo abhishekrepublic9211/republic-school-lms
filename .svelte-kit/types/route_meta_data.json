@@ -1,6 +1,11 @@
 {
 	"/": [],
+	"/assignments": [],
+	"/attendance": [],
+	"/courses": [],
 	"/dashboard": [],
+	"/grades": [],
+	"/lectures": [],
 	"/login": [],
 	"/profile": []
 }
