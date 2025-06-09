@@ -52,6 +52,11 @@ export function updateActiveNavigation(path: string) {
     normalizedPath = path.split('#')[1] || '/';
   }
   
+  // Handle query parameters for tab-based navigation
+  if (path.includes('?')) {
+    normalizedPath = path.split('?')[0];
+  }
+  
   // Default to dashboard for root
   if (normalizedPath === '/' || normalizedPath === '') {
     normalizedPath = '/dashboard';
