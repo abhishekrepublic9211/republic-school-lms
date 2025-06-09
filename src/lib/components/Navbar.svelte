@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Menu, Search, Bell, User, LogOut } from 'lucide-svelte';
-  import { currentUser, isAuthenticated, logout } from '../stores/auth';
-  import { push } from 'svelte-spa-router';
+  import { currentUser, isAuthenticated, logout } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
 
   const dispatch = createEventDispatcher();
 
@@ -16,7 +16,7 @@
 
   function handleLogout() {
     logout();
-    push('/login');
+    goto('/login');
   }
 
   function toggleProfileMenu() {
@@ -55,7 +55,7 @@
       {/if}
 
       <!-- Logo -->
-      <a href={$isAuthenticated ? "#/dashboard" : "#/"} class="flex items-center space-x-3">
+      <a href={$isAuthenticated ? "/dashboard" : "/"} class="flex items-center space-x-3">
         <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
           <span class="text-white font-bold text-xl">R</span>
         </div>
@@ -162,11 +162,11 @@
                 </div>
               </div>
               <div class="p-2">
-                <a href="#/profile" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200 flex items-center space-x-2">
+                <a href="/profile" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200 flex items-center space-x-2">
                   <User class="w-4 h-4" />
                   <span>Profile</span>
                 </a>
-                <a href="#/settings" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200">
+                <a href="/settings" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200">
                   Settings
                 </a>
                 <hr class="my-2 border-gray-100" />
@@ -183,7 +183,7 @@
         </div>
       {:else}
         <!-- Login button for non-authenticated users -->
-        <a href="#/login" class="btn btn-primary">
+        <a href="/login" class="btn btn-primary">
           Sign In
         </a>
       {/if}

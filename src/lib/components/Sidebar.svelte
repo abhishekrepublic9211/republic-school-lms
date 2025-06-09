@@ -14,28 +14,29 @@
     BarChart3,
     MessageSquare
   } from 'lucide-svelte';
-  import { currentUser } from '../stores/auth';
+  import { page } from '$app/stores';
+  import { currentUser } from '$lib/stores/auth';
 
   export let isOpen = false;
 
   const navItems = [
-    { href: '#/dashboard', label: 'Dashboard', icon: Home },
-    { href: '#/profile', label: 'Profile', icon: User },
-    { href: '#/courses', label: 'Courses', icon: BookOpen },
-    { href: '#/assignments', label: 'Assignments', icon: FileText },
-    { href: '#/lectures', label: 'Lectures', icon: Users },
-    { href: '#/attendance', label: 'Attendance', icon: CheckSquare },
-    { href: '#/grades', label: 'Grades', icon: BarChart3 },
-    { href: '#/calendar', label: 'Calendar', icon: Calendar },
-    { href: '#/chat', label: 'Chat', icon: MessageCircle },
-    { href: '#/doubts', label: 'Doubts', icon: HelpCircle },
-    { href: '#/feedback', label: 'Feedback', icon: MessageSquare },
-    { href: '#/payments', label: 'Payments', icon: CreditCard },
-    { href: '#/settings', label: 'Settings', icon: Settings }
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/profile', label: 'Profile', icon: User },
+    { href: '/courses', label: 'Courses', icon: BookOpen },
+    { href: '/assignments', label: 'Assignments', icon: FileText },
+    { href: '/lectures', label: 'Lectures', icon: Users },
+    { href: '/attendance', label: 'Attendance', icon: CheckSquare },
+    { href: '/grades', label: 'Grades', icon: BarChart3 },
+    { href: '/calendar', label: 'Calendar', icon: Calendar },
+    { href: '/chat', label: 'Chat', icon: MessageCircle },
+    { href: '/doubts', label: 'Doubts', icon: HelpCircle },
+    { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+    { href: '/payments', label: 'Payments', icon: CreditCard },
+    { href: '/settings', label: 'Settings', icon: Settings }
   ];
 
   function isActive(href: string): boolean {
-    return window.location.hash === href;
+    return $page.url.pathname === href;
   }
 </script>
 
