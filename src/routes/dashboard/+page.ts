@@ -1,42 +1,22 @@
 import type { PageLoad } from './$types';
-import { serverFetch } from '$lib/api/client';
 import { mockAPI } from '$lib/api/mockService';
-import { dev } from '$app/environment';
 
 export const load: PageLoad = async ({ fetch }) => {
   try {
-    // In development, use mock data
-    if (dev) {
-      const [coursesData, assignmentsData, gradesData, attendanceData] = await Promise.all([
-        mockAPI.getCourses(),
-        mockAPI.getAssignments(),
-        mockAPI.getGrades(),
-        mockAPI.getAttendance()
-      ]);
-
-      return {
-        courses: coursesData.data || [],
-        assignments: assignmentsData.data || [],
-        grades: gradesData.data || [],
-        attendance: attendanceData.data || [],
-        error: null
-      };
-    }
-
-    // In production, use real API
-    const [coursesResponse, assignmentsResponse, gradesResponse, attendanceResponse] = await Promise.all([
-      serverFetch(fetch, '/api/courses'),
-      serverFetch(fetch, '/api/assignments'),
-      serverFetch(fetch, '/api/grades'),
-      serverFetch(fetch, '/api/attendance')
+    // Always use mock data
+    const [coursesData, assignmentsData, gradesData, attendanceData] = await Promise.all([
+      mockAPI.getCourses(),
+      mockAPI.getAssignments(),
+      mockAPI.getGrades(),
+      mockAPI.getAttendance()
     ]);
 
     return {
-      courses: coursesResponse.success ? coursesResponse.data : [],
-      assignments: assignmentsResponse.success ? assignmentsResponse.data : [],
-      grades: gradesResponse.success ? gradesResponse.data : [],
-      attendance: attendanceResponse.success ? attendanceResponse.data : [],
-      error: !coursesResponse.success ? coursesResponse.message : null
+      courses: coursesData.data || [],
+      assignments: assignmentsData.data || [],
+      grades: gradesData.data || [],
+      attendance: attendanceData.data || [],
+      error: null
     };
   } catch (error: any) {
     console.error('Dashboard load error:', error);

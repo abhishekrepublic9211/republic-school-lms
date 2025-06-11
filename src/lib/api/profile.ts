@@ -1,5 +1,4 @@
-import { apiClient, type ApiResponse } from './client';
-import { mockAPI, makeAPICall } from './mockService';
+import { mockAPI, type ApiResponse } from './mockService';
 import type { User } from '$lib/stores/auth';
 
 export interface ProfileUpdateRequest {
@@ -120,14 +119,7 @@ class ProfileAPI {
   // Get complete profile data
   async getProfile(): Promise<ApiResponse<ProfileResponse>> {
     try {
-      return await makeAPICall(
-        '/profile',
-        {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-        },
-        () => mockAPI.getProfile()
-      );
+      return await mockAPI.getProfile();
     } catch (error: any) {
       console.error('Get profile error:', error);
       throw error;
@@ -140,18 +132,7 @@ class ProfileAPI {
       // Validate required fields before sending
       this.validateProfileData(data);
 
-      return await makeAPICall(
-        '/profile',
-        {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          },
-          body: JSON.stringify(data)
-        },
-        () => mockAPI.updateProfile(data)
-      );
+      return await mockAPI.updateProfile(data);
     } catch (error: any) {
       console.error('Update profile error:', error);
       throw error;
@@ -161,9 +142,7 @@ class ProfileAPI {
   // Update specific profile section
   async updateProfileSection(section: keyof ProfileUpdateRequest, data: any): Promise<ApiResponse<ProfileResponse>> {
     try {
-      const updateData = { [section]: data };
-      const response = await apiClient.patch<ApiResponse<ProfileResponse>>('/profile/section', updateData);
-      return response;
+      return await mockAPI.updateProfileSection(section, data);
     } catch (error: any) {
       console.error('Update profile section error:', error);
       throw error;
@@ -176,19 +155,7 @@ class ProfileAPI {
       // Validate file
       this.validateAvatarFile(file);
 
-      return await makeAPICall(
-        '/profile/avatar',
-        {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` },
-          body: (() => {
-            const formData = new FormData();
-            formData.append('file', file);
-            return formData;
-          })()
-        },
-        () => mockAPI.uploadAvatar(file)
-      );
+      return await mockAPI.uploadAvatar(file);
     } catch (error: any) {
       console.error('Upload avatar error:', error);
       throw error;
@@ -198,8 +165,7 @@ class ProfileAPI {
   // Delete profile avatar
   async deleteAvatar(): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await apiClient.delete<ApiResponse<{ message: string }>>('/profile/avatar');
-      return response;
+      return await mockAPI.deleteAvatar();
     } catch (error: any) {
       console.error('Delete avatar error:', error);
       throw error;
@@ -209,8 +175,7 @@ class ProfileAPI {
   // Get profile completion status
   async getProfileCompletion(): Promise<ApiResponse<{ percentage: number; missingFields: string[] }>> {
     try {
-      const response = await apiClient.get<ApiResponse<{ percentage: number; missingFields: string[] }>>('/profile/completion');
-      return response;
+      return await mockAPI.getProfileCompletion();
     } catch (error: any) {
       console.error('Get profile completion error:', error);
       throw error;

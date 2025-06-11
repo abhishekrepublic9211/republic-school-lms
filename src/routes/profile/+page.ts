@@ -1,26 +1,14 @@
 import type { PageLoad } from './$types';
-import { serverFetch } from '$lib/api/client';
 import { mockAPI } from '$lib/api/mockService';
-import { dev } from '$app/environment';
 
 export const load: PageLoad = async ({ fetch }) => {
   try {
-    // In development, use mock data
-    if (dev) {
-      const profileData = await mockAPI.getProfile();
-      
-      return {
-        profile: profileData.data || null,
-        error: profileData.success ? null : profileData.message
-      };
-    }
-
-    // In production, use real API
-    const profileResponse = await serverFetch(fetch, '/api/profile');
-
+    // Always use mock data
+    const profileData = await mockAPI.getProfile();
+    
     return {
-      profile: profileResponse.success ? profileResponse.data : null,
-      error: profileResponse.success ? null : profileResponse.message
+      profile: profileData.data || null,
+      error: profileData.success ? null : profileData.message
     };
   } catch (error: any) {
     console.error('Profile load error:', error);

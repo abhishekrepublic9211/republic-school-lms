@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { currentUser, isAuthenticated, initializeAuth } from '$lib/stores/auth';
+  import { currentUser, isAuthenticated } from '$lib/stores/auth';
   import { initializeNavigation, loadNavigationState } from '$lib/stores/navigation';
   import Navbar from '$lib/components/Navbar.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
@@ -23,9 +23,6 @@
     // Initialize navigation system
     initializeNavigation();
     loadNavigationState();
-    
-    // Initialize authentication state
-    initializeAuth();
     
     // Handle route protection
     const unsubscribe = isAuthenticated.subscribe(auth => {

@@ -1,27 +1,27 @@
+// Mock API service that provides all data functionality
+// This replaces external API calls with local mock data
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
 import { mockApiResponses, mockErrorResponses, MOCK_OTP } from '$lib/data/mockData';
-import type { ApiResponse } from './client';
 
 // Mock API service that simulates real API behavior
 class MockAPIService {
-  private _isEnabled: boolean;
   private baseDelay: number;
-  private failureRate: number;
 
   constructor() {
-    this._isEnabled = import.meta.env.VITE_ENABLE_MOCK_API === 'true' || import.meta.env.DEV;
     this.baseDelay = 800; // Base delay in milliseconds
-    this.failureRate = 0.1; // 10% chance of random failures in dev mode
   }
 
   // Simulate network delay
   private async delay(ms?: number): Promise<void> {
     const delayTime = ms || this.baseDelay + Math.random() * 500; // Add some randomness
     return new Promise(resolve => setTimeout(resolve, delayTime));
-  }
-
-  // Simulate random failures for testing
-  private shouldSimulateFailure(): boolean {
-    return import.meta.env.DEV && Math.random() < this.failureRate;
   }
 
   // Mock Authentication API
@@ -37,15 +37,8 @@ class MockAPIService {
       };
     }
 
-    // Simulate random failure
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
-
     // Log OTP for development
-    if (import.meta.env.DEV) {
-      console.log(`🔐 Mock OTP sent to ${email}: ${MOCK_OTP}`);
-    }
+    console.log(`🔐 Mock OTP sent to ${email}: ${MOCK_OTP}`);
 
     return mockApiResponses.sendOTP;
   }
@@ -65,11 +58,6 @@ class MockAPIService {
     // Check OTP
     if (otp !== MOCK_OTP) {
       return mockErrorResponses.invalidOTP;
-    }
-
-    // Simulate random failure
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
     }
 
     return mockApiResponses.verifyOTP;
@@ -109,11 +97,6 @@ class MockAPIService {
   async getProfile(): Promise<ApiResponse> {
     await this.delay();
 
-    // Simulate random failure
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
-
     return mockApiResponses.getProfile;
   }
 
@@ -127,11 +110,6 @@ class MockAPIService {
         message: 'Validation failed',
         errors: { 'personal.name': ['Name must be at least 2 characters long'] }
       };
-    }
-
-    // Simulate random failure
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
     }
 
     return mockApiResponses.updateProfile;
@@ -157,21 +135,12 @@ class MockAPIService {
       };
     }
 
-    // Simulate random failure
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
-
     return mockApiResponses.uploadAvatar;
   }
 
   // Mock Course API
   async getCourses(): Promise<ApiResponse> {
     await this.delay();
-    
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
     
     return {
       success: true,
@@ -183,10 +152,6 @@ class MockAPIService {
   async getAssignments(): Promise<ApiResponse> {
     await this.delay();
     
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
-    
     return {
       success: true,
       data: mockApiResponses.getAssignments.data
@@ -196,10 +161,6 @@ class MockAPIService {
   // Mock Grades API
   async getGrades(): Promise<ApiResponse> {
     await this.delay();
-    
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
     
     return {
       success: true,
@@ -211,49 +172,42 @@ class MockAPIService {
   async getAttendance(): Promise<ApiResponse> {
     await this.delay();
     
-    if (this.shouldSimulateFailure()) {
-      return mockErrorResponses.networkError;
-    }
-    
     return {
       success: true,
       data: mockApiResponses.getAttendance.data
     };
   }
 
-  // Utility methods
-  isEnabled(): boolean {
-    return this._isEnabled;
+  // Additional profile methods
+  async updateProfileSection(section: string, data: any): Promise<ApiResponse> {
+    await this.delay(800);
+    
+    return {
+      success: true,
+      data: mockApiResponses.updateProfile.data
+    };
   }
 
-  setFailureRate(rate: number): void {
-    this.failureRate = Math.max(0, Math.min(1, rate));
+  async deleteAvatar(): Promise<ApiResponse> {
+    await this.delay(600);
+    
+    return {
+      success: true,
+      data: { message: 'Avatar deleted successfully' }
+    };
   }
 
-  setBaseDelay(ms: number): void {
-    this.baseDelay = Math.max(0, ms);
+  async getProfileCompletion(): Promise<ApiResponse> {
+    await this.delay(400);
+    
+    return {
+      success: true,
+      data: { 
+        percentage: 75, 
+        missingFields: ['phone', 'bio', 'location'] 
+      }
+    };
   }
 }
 
 export const mockAPI = new MockAPIService();
-
-// Enhanced API client that uses mock service when enabled
-export async function makeAPICall<T>(
-  endpoint: string,
-  options: RequestInit = {},
-  mockHandler?: () => Promise<ApiResponse<T>>
-): Promise<ApiResponse<T>> {
-  // Use mock service if enabled and handler provided
-  if (mockAPI.isEnabled() && mockHandler) {
-    try {
-      return await mockHandler();
-    } catch (error) {
-      console.error('Mock API error:', error);
-      return mockErrorResponses.networkError as ApiResponse<T>;
-    }
-  }
-
-  // Fall back to real API call
-  const response = await fetch(endpoint, options);
-  return response.json();
-}
