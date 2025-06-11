@@ -1,20 +1,6 @@
 {
 	"/": [],
-	"/assignments": [],
-	"/attendance": [],
-	"/chat": [],
-	"/courses": [],
-	"/dashboard": [
-		"src/routes/dashboard/+page.ts"
-	],
-	"/doubts": [],
-	"/feedback": [],
-	"/grades": [],
-	"/lectures": [],
 	"/login": [],
 	"/payments": [],
-	"/profile": [
-		"src/routes/profile/+page.ts"
-	],
-	"/settings": []
+	"/profile": []
 }
