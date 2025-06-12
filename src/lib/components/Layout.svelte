@@ -10,20 +10,12 @@
 
   let sidebarOpen = false;
 
-  function getCookie(name: string) {
-    if (typeof document === 'undefined') return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  }
-  const authenticated = typeof document !== 'undefined' && getCookie('isAuthenticated') === 'true' ? 'true' : 'false';
 
   onMount(() => {
     // Redirect to login if not authenticated and not on login page
     const unsubscribe = isAuthenticated.subscribe(auth => {
       console.log("checking authentication status in layout svelte:", auth);
-      if (authenticated=='false') {
+      if (!auth) {
         push('/login');
       }
     });
