@@ -12,12 +12,26 @@
   let showSidebar = true;
   let showNavbar = true;
 
+  function getCookie(name: string) {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+  let authenticated = typeof document !== 'undefined' && getCookie('isAuthenticated') === 'true' ? 'true' : 'false';
+
+  console.log("authenticated",authenticated);
+
+  
   // Determine layout based on current route
   $: {
     const path = $page.url.pathname;
-    showSidebar = $isAuthenticated && path !== '/login' && path !== '/';
+    showSidebar = authenticated =='true' && path !== '/login' && path !== '/';
     showNavbar = true;
   }
+
+   console.log("showSidebar",showSidebar);
 
   onMount(() => {
     // Initialize navigation system
@@ -27,8 +41,8 @@
     // Handle route protection
     const unsubscribe = isAuthenticated.subscribe(auth => {
       const currentPath = $page.url.pathname;
-      
-      if (!auth && currentPath !== '/login' && currentPath !== '/') {
+      console.log("checking authentication status in layout svelte routes:", auth);
+      if (authenticated=='false') {
         goto('/login');
       } else if (auth && (currentPath === '/login' || currentPath === '/')) {
         goto('/dashboard');

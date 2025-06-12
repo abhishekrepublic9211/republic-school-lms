@@ -77,7 +77,7 @@ export async function sendOTP(email: string): Promise<{ success: boolean; messag
   try {
     const response = await authAPI.sendOTP(email);
     
-    if (response.success) {
+    if (response.status==200) {
       return {
         success: true,
         message: response.data?.message || 'OTP sent successfully',
@@ -103,9 +103,10 @@ export async function verifyOTP(email: string, otp: string): Promise<{ success: 
   try {
     const response = await authAPI.verifyOTP({ email, otp });
     
-    if (response.success && response.data) {
+    if (response.status==200) {
       // Set user as authenticated with mock user data
-      currentUser.set(mockUser);
+      currentUser.set(response.data?.user);
+      document.cookie = "isAuthenticated=true; path=/";
       isAuthenticated.set(true);
       
       return { success: true, message: 'Login successful' };
@@ -134,6 +135,7 @@ export async function logout(): Promise<void> {
   } finally {
     // Clear local state
     currentUser.set(null);
+     document.cookie = "isAuthenticated=false; path=/";
     isAuthenticated.set(false);
     authLoading.set(false);
   }

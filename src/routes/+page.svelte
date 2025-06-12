@@ -3,17 +3,24 @@
   import { goto } from '$app/navigation';
   import { isAuthenticated } from '$lib/stores/auth';
 
-  onMount(() => {
-    // Redirect based on authentication status
-    const unsubscribe = isAuthenticated.subscribe(auth => {
-      if (auth) {
-        goto('/dashboard');
-      } else {
-        goto('/login');
-      }
-    });
+  function getCookie(name: string) {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
 
-    return unsubscribe;
+  onMount(() => {
+    let authenticated = 'false';
+    if (typeof document !== 'undefined') {
+      authenticated = getCookie('isAuthenticated') === 'true' ? 'true' : 'false';
+    }
+    if (authenticated == 'true') {
+      goto('/dashboard');
+    } else {
+      goto('/login');
+    }
   });
 </script>
 
