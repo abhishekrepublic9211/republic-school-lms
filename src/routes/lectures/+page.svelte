@@ -2,10 +2,14 @@
   import { Calendar, Clock, Users, MapPin, Play, Download, MessageCircle } from 'lucide-svelte';
   import { lectures } from '$lib/stores/lectures';
   import { attendanceRecords } from '$lib/stores/attendance';
-  import { currentUser } from '$lib/stores/auth';
+  import { authStore } from '$lib/stores/auth';
+    import { derived } from 'svelte/store';
 
   let selectedDate = '';
   let selectedCourse = '';
+
+  const currentUser = derived(authStore, $auth => $auth.user);
+  console.log("Current user in lectures page:", currentUser);
 
   // Filter lectures
   $: filteredLectures = $lectures.filter(lecture => {

@@ -3,7 +3,10 @@
   import { attendanceSummaries, attendanceRecords, getAttendanceStatus } from '$lib/stores/attendance';
   import { lectures } from '$lib/stores/lectures';
   import { courses } from '$lib/stores/courses';
-  import { currentUser } from '$lib/stores/auth';
+import { authStore, type User } from '$lib/stores/auth';
+    import { derived } from 'svelte/store';
+
+ const currentUser = derived(authStore, $auth => $auth.user);
 
   let selectedCourse = '';
 

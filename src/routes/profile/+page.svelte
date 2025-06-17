@@ -1,10 +1,14 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import { FileEdit as Edit, Mail, Phone, MapPin, Calendar, User, BookOpen, Heart, Globe, Award, FileText, Users, Briefcase, Save, X } from 'lucide-svelte';
-  import { currentUser, updateUser, authLoading } from '$lib/stores/auth';
+  import { FileEdit as Edit, Mail, Phone, MapPin, Calendar, User as UserIcon, BookOpen, Heart, Globe, Award, FileText, Users, Briefcase, Save, X } from 'lucide-svelte';
   import { profileAPI } from '$lib/api/profile';
   import type { ProfileUpdateRequest } from '$lib/api/profile';
   import { onMount } from 'svelte';
+  import { authStore, type ProfileData } from '../../lib/stores/auth';
+  import { userService, authService, ApiError } from '$lib/api/api';
+    import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+    import { writable } from 'svelte/store';
 
   export let data: PageData;
 
@@ -14,28 +18,36 @@
   let saveSuccess = '';
   let avatarFile: File | null = null;
   let avatarPreview = '';
+  let showEditMode: boolean = false;
+   let isLoading: boolean = true;
+  let errorMessage: string | null = null;
   let activeSection = 'personal'; // Track which section is being edited
 
+  let currentUser: User | null;
+  $: currentUser = $authStore.user;
+
+  let completionPercentage  = writable(0)
+
   // Initialize with data from load function
-  $: if (data.profile && !isEditing) {
-    initializeProfileData(data.profile);
-  }
+  // $: if (data.profile && !isEditing) {
+  //   initializeProfileData(data.profile);
+  // }
 
   $: loadError = data.error;
   
   let profileData = {
     // Personal Information
     personal: {
-      name: $currentUser?.name || '',
-      email: $currentUser?.email || '',
-      phone: $currentUser?.phone || '',
+      name: currentUser?.name || '',
+      email: currentUser?.email || '',
+      phone: currentUser?.phone || '',
       dateOfBirth: '',
       gender: '',
       nationality: '',
       religion: '',
       category: '',
       maritalStatus: '',
-      profilePhoto: $currentUser?.avatar || ''
+      profilePhoto: currentUser?.avatar || ''
     },
     
     // Address Information
@@ -53,25 +65,10 @@
     
     // Educational Background
     education: {
-      tenthBoard: '',
-      tenthSchool: '',
-      tenthYear: '',
-      tenthPercentage: '',
-      twelfthBoard: '',
-      twelfthSchool: '',
-      twelfthYear: '',
-      twelfthPercentage: '',
-      graduationDegree: '',
-      graduationUniversity: '',
-      graduationYear: '',
-      graduationPercentage: '',
-      postGraduationDegree: '',
-      postGraduationUniversity: '',
-      postGraduationYear: '',
-      postGraduationPercentage: '',
-      lastQualificationDegree: '',
-      lastQualificationInstitution: '',
-      lastQualificationYear: ''
+    lastQualificationDegree: '',
+        lastQualificationUniversity: '',
+        lastQualificationPercentage: '',
+        lastQualificationYear: '',
     },
     
     // Parent/Guardian Information
@@ -129,24 +126,15 @@
       socialMedia: ''
     },
     
-    // References
-    references: {
-      academicRefName: '',
-      academicRefDesignation: '',
-      academicRefInstitution: '',
-      academicRefContact: '',
-      professionalRefName: '',
-      professionalRefDesignation: '',
-      professionalRefOrganization: '',
-      professionalRefContact: ''
-    }
+    
   };
 
   // Load profile data from API
   function initializeProfileData(profile: any) {
+   
     if (profile) {
       // Update current user
-      updateUser(profile);
+      // updateUser(profile);
       
       // Update profile data if available
       if (profile.profileData) {
@@ -156,7 +144,7 @@
       // Update basic info from user data
       profileData.personal.name = profile.name;
       profileData.personal.email = profile.email;
-      profileData.personal.phone = profile.phone || '';
+      profileData.personal.phone = profile.phone || profile.profileData?.personal?.phone || ''; // Use profile.phone or nested phone
       profileData.personal.profilePhoto = profile.avatar;
     }
   }
@@ -166,6 +154,8 @@
     isSaving = true;
     saveError = '';
     saveSuccess = '';
+
+
     
     try {
       // Prepare update request
@@ -188,14 +178,14 @@
         professional: profileData.professional,
         learning: profileData.learning,
         additional: profileData.additional,
-        references: profileData.references
+
       };
       
       const response = await profileAPI.updateProfile(updateRequest);
       
       if (response.success && response.data) {
         // Update current user
-        updateUser(response.data);
+        // updateUser(response.data);
         
         // Save to localStorage as backup
         localStorage.setItem('profileData', JSON.stringify(profileData));
@@ -221,8 +211,10 @@
   }
 
   async function toggleEdit() {
+
+    const userId = localStorage.getItem('userId');
     if (isEditing) {
-      await saveProfileData();
+      await userService.updateUser(userId,profileData);
     }
     isEditing = !isEditing;
   }
@@ -280,11 +272,11 @@
         profileData.personal.profilePhoto = response.data.avatarUrl;
         
         // Update current user
-        if ($currentUser) {
-          updateUser({
-            ...$currentUser,
-            avatar: response.data.avatarUrl
-          });
+        if (currentUser) {
+          // updateUser({
+          //   ...currentUser,
+          //   avatar: response.data.avatarUrl
+          // });
         }
         
         saveSuccess = 'Profile photo updated successfully!';
@@ -305,149 +297,276 @@
     }
   }
 
-  function loadSampleData() {
-    profileData = {
-      personal: {
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@email.com',
-        phone: '+1 (555) 123-4567',
-        dateOfBirth: '1995-08-15',
-        gender: 'Female',
-        nationality: 'American',
-        religion: 'Christianity',
-        category: 'General',
-        maritalStatus: 'Single',
-        profilePhoto: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'
-      },
-      address: {
-        currentAddress: '123 Main Street, Apt 4B',
-        currentCity: 'New York',
-        currentState: 'NY',
-        currentPincode: '10001',
-        permanentAddress: '456 Oak Avenue',
-        permanentCity: 'Boston',
-        permanentState: 'MA',
-        permanentPincode: '02101',
-        sameAsCurrent: false
-      },
-      education: {
-        tenthBoard: 'CBSE',
-        tenthSchool: 'St. Mary\'s High School',
-        tenthYear: '2011',
-        tenthPercentage: '92%',
-        twelfthBoard: 'CBSE',
-        twelfthSchool: 'St. Mary\'s Senior Secondary School',
-        twelfthYear: '2013',
-        twelfthPercentage: '89%',
-        graduationDegree: 'Bachelor of Arts in English Literature',
-        graduationUniversity: 'Columbia University',
-        graduationYear: '2017',
-        graduationPercentage: '3.8 GPA',
-        postGraduationDegree: 'Master of Arts in Journalism',
-        postGraduationUniversity: 'New York University',
-        postGraduationYear: '2019',
-        postGraduationPercentage: '3.9 GPA',
-        lastQualificationDegree: 'Master of Arts in Journalism',
-        lastQualificationInstitution: 'New York University',
-        lastQualificationYear: '2019'
-      },
-      parentGuardian: {
-        name: 'Robert Johnson',
-        relationship: 'Father',
-        contactNumber: '+1 (555) 987-6543',
-        email: 'robert.johnson@email.com',
-        occupation: 'Engineer',
-        address: '456 Oak Avenue, Boston, MA 02101'
-      },
-      emergencyContact: {
-        name: 'Emily Johnson',
-        relationship: 'Sister',
-        contactNumber: '+1 (555) 456-7890',
-        email: 'emily.johnson@email.com',
-        address: '789 Pine Street, Boston, MA 02102'
-      },
-      medical: {
-        bloodGroup: 'O+',
-        medicalConditions: 'None',
-        allergies: 'Peanuts',
-        medications: 'None'
-      },
-      professional: {
-        currentEmployment: 'Freelance Writer',
-        designation: 'Content Writer',
-        organization: 'Self-employed',
-        workExperience: '2 years',
-        previousEmployment: 'Junior Reporter at Local News',
-        skills: 'Writing, Research, Interviewing, Social Media'
-      },
-      learning: {
-        courseInterests: 'Digital Journalism, Investigative Reporting',
-        careerGoals: 'To become a renowned investigative journalist',
-        technicalSkills: 'Adobe Creative Suite, WordPress, Social Media Management',
-        preferredLearningStyle: 'Visual and Hands-on',
-        expectations: 'Gain practical experience and industry connections'
-      },
-      additional: {
-        languages: 'English (Native), Spanish (Intermediate), French (Basic)',
-        hobbies: 'Reading, Photography, Traveling, Blogging',
-        achievements: 'Dean\'s List, University Scholarship Recipient',
-        extracurricular: 'University Newspaper Editor, Debate Club President',
-        socialMedia: 'LinkedIn: sarah-johnson-journalist, Twitter: @sarahjwriter'
-      },
-      references: {
-        academicRefName: 'Dr. Michael Chen',
-        academicRefDesignation: 'Professor',
-        academicRefInstitution: 'New York University',
-        academicRefContact: 'michael.chen@nyu.edu',
-        professionalRefName: 'Jane Smith',
-        professionalRefDesignation: 'Editor-in-Chief',
-        professionalRefOrganization: 'Local News Network',
-        professionalRefContact: 'jane.smith@localnews.com'
-      }
-    };
-    saveProfileData();
-  }
+  
 
   // Calculate profile completion percentage
-  function calculateCompletion() {
-    const requiredFields = [
-      profileData.personal.name,
-      profileData.personal.email,
-      profileData.personal.phone,
-      profileData.personal.dateOfBirth,
-      profileData.personal.gender,
-      profileData.address.currentAddress,
-      profileData.address.currentCity,
-      profileData.address.currentState,
-      profileData.education.lastQualificationDegree,
-      profileData.education.lastQualificationInstitution,
-      profileData.education.lastQualificationYear,
-      profileData.parentGuardian.name,
-      profileData.parentGuardian.relationship,
-      profileData.parentGuardian.contactNumber,
-      profileData.emergencyContact.name,
-      profileData.emergencyContact.relationship,
-      profileData.emergencyContact.contactNumber,
-      profileData.medical.bloodGroup,
-      profileData.medical.medicalConditions
-    ];
-    
-    const filledFields = requiredFields.filter(field => field && field.trim() !== '').length;
-    return Math.round((filledFields / requiredFields.length) * 100);
-  }
+ function calculateCompletion(profileData:ProfileData): number {
+  const requiredFields = [
+    // Personal Information
+    profileData.personal?.name,
+    profileData.personal?.email,
+    profileData.personal?.phone,
+    profileData.personal?.dateOfBirth,
+    profileData.personal?.gender,
+    profileData.personal?.nationality,
+    profileData.personal?.religion,
+    profileData.personal?.category,
+    profileData.personal?.maritalStatus,
 
-  $: completionPercentage = calculateCompletion();
+    // Address Information
+    profileData.address?.currentAddress,
+    profileData.address?.currentCity,
+    profileData.address?.currentState,
+    profileData.address?.currentPincode,
+    profileData.address?.permanentAddress,
+    profileData.address?.permanentCity,
+    profileData.address?.permanentState,
+    profileData.address?.permanentPincode,
+
+    // Educational Background
+    profileData.education?.lastQualificationDegree,
+    profileData.education?.lastQualificationUniversity,
+    profileData.education?.lastQualificationPercentage,
+    profileData.education?.lastQualificationYear,
+
+    // Parent/Guardian Information
+    profileData.parentGuardian?.name,
+    profileData.parentGuardian?.relationship,
+    profileData.parentGuardian?.contactNumber,
+    profileData.parentGuardian?.email,
+    profileData.parentGuardian?.occupation,
+    profileData.parentGuardian?.address,
+
+    // Emergency Contact
+    profileData.emergencyContact?.name,
+    profileData.emergencyContact?.relationship,
+    profileData.emergencyContact?.contactNumber,
+    profileData.emergencyContact?.email,
+    profileData.emergencyContact?.address,
+
+    // Medical Information
+    profileData.medical?.bloodGroup,
+    profileData.medical?.medicalConditions,
+    profileData.medical?.allergies,
+    profileData.medical?.medications,
+
+    // Professional Information
+    profileData.professional?.currentEmployment,
+    profileData.professional?.designation,
+    profileData.professional?.organization,
+    profileData.professional?.workExperience,
+    profileData.professional?.previousEmployment,
+    profileData.professional?.skills,
+
+    // Course & Learning Information
+    profileData.learning?.courseInterests,
+    profileData.learning?.careerGoals,
+    profileData.learning?.technicalSkills,
+    profileData.learning?.preferredLearningStyle,
+    profileData.learning?.expectations,
+
+    // Additional Information
+    profileData.additional?.languages,
+    profileData.additional?.hobbies,
+    profileData.additional?.achievements,
+    profileData.additional?.extracurricular,
+    profileData.additional?.socialMedia,
+  ];
+
+  const filledFields = requiredFields.filter(
+    (field) => typeof field === 'string' && field.trim() !== ''
+  ).length;
+
+  const notFilledFields = requiredFields.map(
+    (field) => 
+   
+     {return field}
+    
+  );
+
+   $: completionPercentage = Math.round((filledFields / requiredFields.length) * 100);
+
+  return Math.round((filledFields / requiredFields.length) * 100);
+}
+
+
+ 
+
+ function isProfileEffectivelyIncomplete(user: User | null): boolean {
+  if (!user) return true;
+
+  const profile = user.profileData;
+
+  // Check personal details
+  const isPersonalIncomplete = !profile?.personal?.gender ||
+                               !profile?.personal?.dateOfBirth ||
+                               !profile?.personal?.phone ||
+                               !profile?.personal?.nationality ||
+                               !profile?.personal?.religion ||
+                               !profile?.personal?.category ||
+                               !profile?.personal?.maritalStatus;
+
+  // Check address
+  const isAddressIncomplete = !profile?.address?.currentAddress ||
+                              !profile?.address?.currentCity ||
+                              !profile?.address?.currentState ||
+                              !profile?.address?.currentPincode ||
+                              !profile?.address?.permanentAddress ||
+                              !profile?.address?.permanentCity ||
+                              !profile?.address?.permanentState ||
+                              !profile?.address?.permanentPincode;
+
+  // Check education
+  const isEducationIncomplete = !profile?.education?.lastQualificationDegree ||
+                                !profile?.education?.lastQualificationUniversity ||
+                                !profile?.education?.lastQualificationPercentage ||
+                                !profile?.education?.lastQualificationYear;
+
+  // Check parent/guardian
+  const isParentIncomplete = !profile?.parentGuardian?.name ||
+                             !profile?.parentGuardian?.relationship ||
+                             !profile?.parentGuardian?.contactNumber ||
+                             !profile?.parentGuardian?.email ||
+                             !profile?.parentGuardian?.occupation ||
+                             !profile?.parentGuardian?.address;
+
+  // Check emergency contact
+  const isEmergencyIncomplete = !profile?.emergencyContact?.name ||
+                                !profile?.emergencyContact?.relationship ||
+                                !profile?.emergencyContact?.contactNumber ||
+                                !profile?.emergencyContact?.email ||
+                                !profile?.emergencyContact?.address;
+
+  // Check medical
+  const isMedicalIncomplete = !profile?.medical?.bloodGroup;
+
+  // Check professional
+  const isProfessionalIncomplete = !profile?.professional?.currentEmployment ||
+                                   !profile?.professional?.designation ||
+                                   !profile?.professional?.organization;
+
+  // Check learning
+  const isLearningIncomplete = !profile?.learning?.courseInterests ||
+                               !profile?.learning?.careerGoals;
+
+  // Check additional
+  const isAdditionalIncomplete = !profile?.additional?.languages ||
+                                 !profile?.additional?.hobbies;
+
+  // Final check
+  return !user.firstName ||
+         !user.lastName ||
+         isPersonalIncomplete ||
+         isAddressIncomplete ||
+         isEducationIncomplete ||
+         isParentIncomplete ||
+         isEmergencyIncomplete ||
+         isMedicalIncomplete ||
+         isProfessionalIncomplete ||
+         isLearningIncomplete ||
+         isAdditionalIncomplete;
+}
+
   
   // Load profile data on component mount
-  onMount(() => {
-    if (data.profile) {
-      initializeProfileData(data.profile);
+onMount(async () => {
+    await new Promise(resolve => setTimeout(resolve, 0)); 
+
+    if (!$authStore.isAuthenticated) {
+      if ($page.url.pathname !== '/login') goto('/login');
+      return;
+    }
+
+    const editParam = $page.url.searchParams.get('edit');
+    if (editParam === 'true') {
+      showEditMode = true;
+    }
+    
+    const userId = currentUser?._id || currentUser?.id;
+
+    if (userId) {
+      isLoading = true;
+      errorMessage = null;
+      try {
+        let userToStore: User | null = null;
+        const initialProfile = await authService.getProfile();
+        
+
+        if (initialProfile && initialProfile.data) {
+          let fetchedUser = initialProfile.data as User;
+          fetchedUser.id = fetchedUser._id || fetchedUser.id; 
+          userToStore = fetchedUser;
+         
+
+
+          if (fetchedUser._id) {
+            
+            try {
+              const fullUserResponse = await userService.getUserById(fetchedUser.id);
+             
+              if (fullUserResponse && fullUserResponse.profileData) {
+                userToStore = fullUserResponse.profileData as ProfileData;
+             
+                profileData = userToStore
+                profileData.personal.name = fullUserResponse.fullName;
+                profileData.personal.email = fullUserResponse.email;
+                 calculateCompletion(fullUserResponse.profileData)
+
+               
+                // saveProfileData();
+              } else {
+                console.warn('Failed to get full user details from /users/get/:id');
+              }
+            } catch (userGetError) {
+              console.error('Error fetching full user details from /users/get/:id:', userGetError);
+            }
+          }
+        } else {
+           errorMessage = 'Failed to load profile data from /auth/profile.';
+        }
+
+        if (userToStore) {
+          authStore.setUser(userToStore); 
+          // currentUser is updated by subscription. Re-check edit mode based on new data.
+          if (isProfileEffectivelyIncomplete(userToStore) && !$page.url.searchParams.has('view')) {
+            showEditMode = true;
+          }
+        } else if (!errorMessage) { 
+            errorMessage = 'Could not retrieve user profile information.';
+        }
+
+      } catch (error) {
+        if (error instanceof ApiError) {
+          errorMessage = error.data?.message || error.message || 'Failed to load profile.';
+        } else {
+          errorMessage = (error as Error).message || 'An unexpected error occurred.';
+        }
+        console.error('Error fetching profile onMount:', error);
+
+        goto('/login'); // Redirect to login if profile fetch fails
+
+      } finally {
+        isLoading = false;
+      }
+    } else {
+      errorMessage = 'User session not found. Please try logging in again.';
+      isLoading = false;
+      if (typeof window !== 'undefined' && $page.url.pathname !== '/login') {
+        goto('/login');
+      }
     }
   });
 
+   const getInitials = (name: string) =>
+    name
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+
   // Profile sections for navigation
   const profileSections = [
-    { id: 'personal', label: 'Personal Info', icon: User },
+    { id: 'personal', label: 'Personal Info', icon: UserIcon },
     { id: 'address', label: 'Address', icon: MapPin },
     { id: 'education', label: 'Education', icon: BookOpen },
     { id: 'guardian', label: 'Guardian', icon: Users },
@@ -456,7 +575,6 @@
     { id: 'professional', label: 'Professional', icon: Briefcase },
     { id: 'learning', label: 'Learning', icon: Award },
     { id: 'additional', label: 'Additional', icon: Globe },
-    { id: 'references', label: 'References', icon: FileText }
   ];
 </script>
 
@@ -505,55 +623,62 @@
   <!-- Profile Header -->
   <div class="card p-8">
     <div class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-      <div class="relative">
-        <img 
-          src={avatarPreview || profileData.personal.profilePhoto || $currentUser?.avatar} 
-          alt={profileData.personal.name || $currentUser?.name}
-          class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-        />
-        {#if isEditing}
-          <div class="absolute bottom-2 right-2">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              on:change={handleAvatarUpload}
-              class="hidden"
-              id="avatar-upload"
-            />
-            <label
-              for="avatar-upload"
-              class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-colors duration-200 cursor-pointer"
-            >
-              <Edit class="w-4 h-4" />
-            </label>
-          </div>
-        {/if}
-        
-        {#if avatarFile}
-          <div class="mt-2 flex space-x-2">
-            <button
-              on:click={uploadAvatar}
-              disabled={isSaving}
-              class="btn btn-primary text-xs px-3 py-1 disabled:opacity-50"
-            >
-              {isSaving ? 'Uploading...' : 'Upload'}
-            </button>
-            <button
-              on:click={() => {
-                avatarFile = null;
-                avatarPreview = '';
-              }}
-              class="btn btn-secondary text-xs px-3 py-1"
-            >
-              Cancel
-            </button>
-          </div>
-        {/if}
-      </div>
+    <div class="relative">
+  {#if profileData.avatar || currentUser?.avatar}
+    <img
+      src={profileData.avatar || currentUser?.avatar}
+      alt={profileData.personal.name || currentUser?.name}
+      class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+    />
+  {:else}
+    <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-300 flex items-center justify-center text-3xl font-semibold text-white uppercase">
+      {getInitials(profileData.personal.name || currentUser?.name)}
+    </div>
+  {/if}
+
+  {#if isEditing}
+    <div class="absolute bottom-2 right-2">
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        on:change={handleAvatarUpload}
+        class="hidden"
+        id="avatar-upload"
+      />
+      <label
+        for="avatar-upload"
+        class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-colors duration-200 cursor-pointer"
+      >
+        <Edit class="w-4 h-4" />
+      </label>
+    </div>
+  {/if}
+
+  {#if avatarFile}
+    <div class="mt-2 flex space-x-2">
+      <button
+        on:click={uploadAvatar}
+        disabled={isSaving}
+        class="btn btn-primary text-xs px-3 py-1 disabled:opacity-50"
+      >
+        {isSaving ? 'Uploading...' : 'Upload'}
+      </button>
+      <button
+        on:click={() => {
+          avatarFile = null;
+          avatarPreview = '';
+        }}
+        class="btn btn-secondary text-xs px-3 py-1"
+      >
+        Cancel
+      </button>
+    </div>
+  {/if}
+</div>
       
       <div class="flex-1">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          {profileData.personal.name || $currentUser?.name || 'Complete Your Profile'}
+          {profileData.personal.name || currentUser?.name || 'Complete Your Profile'}
         </h1>
         <p class="text-gray-600 mb-4">
           {profileData.learning.careerGoals || 'Student at Republic School of Journalism'}
@@ -578,10 +703,10 @@
               <span>{profileData.address.currentCity}, {profileData.address.currentState}</span>
             </div>
           {/if}
-          {#if $currentUser?.joinDate}
+          {#if currentUser?.joinDate}
             <div class="flex items-center space-x-1">
               <Calendar class="w-4 h-4" />
-              <span>Joined {new Date($currentUser.joinDate).toLocaleDateString()}</span>
+              <span>Joined {new Date(currentUser.joinDate).toLocaleDateString()}</span>
             </div>
           {/if}
         </div>
@@ -605,7 +730,9 @@
         {#if isEditing}
           <button 
             on:click={toggleEdit}
-            disabled={isSaving || $authLoading}
+           
+            disabled={isSaving}
+
             class="btn btn-primary disabled:opacity-50 flex items-center space-x-2"
           >
             {#if isSaving}
@@ -627,20 +754,20 @@
         {:else}
           <button 
             on:click={toggleEdit}
-            disabled={$authLoading}
+          
             class="btn btn-primary flex items-center space-x-2"
           >
             <Edit class="w-4 h-4" />
             <span>Edit Profile</span>
           </button>
         {/if}
-        <button 
+        <!-- <button 
           on:click={loadSampleData}
-          disabled={isSaving || $authLoading}
+          disabled={isSaving}
           class="btn btn-secondary text-sm"
         >
           Load Sample Data
-        </button>
+        </button> -->
       </div>
     </div>
   </div>
@@ -869,7 +996,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
                     <input
                       type="text"
-                      bind:value={profileData.education.lastQualificationInstitution}
+                      bind:value={profileData.education.lastQualificationUniversity}
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
@@ -885,41 +1012,20 @@
               </div>
 
               <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Graduation</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Degree</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.education.graduationDegree}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">University</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.education.graduationUniversity}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.education.graduationYear}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
+             
+              
+                 
+                 
+                
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Grade/Percentage</label>
                     <input
                       type="text"
-                      bind:value={profileData.education.graduationPercentage}
+                      bind:value={profileData.education.lastQualificationPercentage}
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
-                </div>
+              
               </div>
             </div>
           {:else if activeSection === 'guardian'}
@@ -1113,6 +1219,16 @@
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
+
+                 <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Previous Organization</label>
+                <input
+                  type="text"
+                  bind:value={profileData.professional.previousEmployment}
+                  
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Skills</label>
                 <textarea
@@ -1167,6 +1283,18 @@
                   <option value="Mixed">Mixed</option>
                 </select>
               </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">expectations</label>
+                <textarea
+                  bind:value={profileData.learning.expectations}
+                  rows="3"
+                  placeholder="List your technical skills"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                ></textarea>
+              </div>
+
+              
             </div>
           {:else if activeSection === 'additional'}
             <h2 class="text-xl font-bold text-gray-900 mb-6">Additional Information</h2>
@@ -1207,86 +1335,17 @@
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 ></textarea>
               </div>
-            </div>
-          {:else if activeSection === 'references'}
-            <h2 class="text-xl font-bold text-gray-900 mb-6">References</h2>
-            <div class="space-y-8">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Academic Reference</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.academicRefName}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Designation</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.academicRefDesignation}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.academicRefInstitution}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.academicRefContact}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Professional Reference</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.professionalRefName}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Designation</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.professionalRefDesignation}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Organization</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.professionalRefOrganization}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact</label>
-                    <input
-                      type="text"
-                      bind:value={profileData.references.professionalRefContact}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                </div>
+                <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Social Media</label>
+                <textarea
+                  bind:value={profileData.additional.socialMedia}
+                  rows="3"
+                  placeholder="List your extracurricular activities"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                ></textarea>
               </div>
             </div>
+      
           {/if}
         </div>
       </div>
@@ -1297,7 +1356,7 @@
       <!-- Personal Information -->
       <div class="card p-6">
         <div class="flex items-center space-x-2 mb-4">
-          <User class="w-5 h-5 text-primary-600" />
+          <UserIcon class="w-5 h-5 text-primary-600" />
           <h2 class="text-xl font-bold text-gray-900">Personal Information</h2>
         </div>
         <div class="space-y-3">
@@ -1385,34 +1444,25 @@
             <h3 class="font-medium text-gray-900 mb-2">Last Qualification</h3>
             <div class="bg-gray-50 p-3 rounded-lg">
               <p class="text-sm"><span class="font-medium">Degree:</span> {profileData.education.lastQualificationDegree || 'Not provided'}</p>
-              <p class="text-sm"><span class="font-medium">Institution:</span> {profileData.education.lastQualificationInstitution || 'Not provided'}</p>
+              <p class="text-sm"><span class="font-medium">Institution:</span> {profileData.education.lastQualificationUniversity || 'Not provided'}</p>
               <p class="text-sm"><span class="font-medium">Year:</span> {profileData.education.lastQualificationYear || 'Not provided'}</p>
+               <p class="text-sm"><span class="font-medium">Grade:</span> {profileData.education.lastQualificationPercentage}</p>
             </div>
           </div>
           
-          {#if profileData.education.graduationDegree}
+          <!-- {#if profileData.education.lastQualificationDegree}
             <div>
               <h3 class="font-medium text-gray-900 mb-2">Graduation</h3>
               <div class="bg-gray-50 p-3 rounded-lg">
-                <p class="text-sm"><span class="font-medium">Degree:</span> {profileData.education.graduationDegree}</p>
-                <p class="text-sm"><span class="font-medium">University:</span> {profileData.education.graduationUniversity}</p>
-                <p class="text-sm"><span class="font-medium">Year:</span> {profileData.education.graduationYear}</p>
-                <p class="text-sm"><span class="font-medium">Grade:</span> {profileData.education.graduationPercentage}</p>
+                <p class="text-sm"><span class="font-medium">Degree:</span> {profileData.education.lastQualificationDegree}</p>
+                <p class="text-sm"><span class="font-medium">University:</span> {profileData.education.lastQualificationUniversity}</p>
+                <p class="text-sm"><span class="font-medium">Year:</span> {profileData.education.lastQualificationYear}</p>
+                <p class="text-sm"><span class="font-medium">Grade:</span> {profileData.education.lastQualificationPercentage}</p>
               </div>
             </div>
-          {/if}
+          {/if} -->
 
-          {#if profileData.education.twelfthBoard}
-            <div>
-              <h3 class="font-medium text-gray-900 mb-2">12th Standard</h3>
-              <div class="bg-gray-50 p-3 rounded-lg">
-                <p class="text-sm"><span class="font-medium">Board:</span> {profileData.education.twelfthBoard}</p>
-                <p class="text-sm"><span class="font-medium">School:</span> {profileData.education.twelfthSchool}</p>
-                <p class="text-sm"><span class="font-medium">Year:</span> {profileData.education.twelfthYear}</p>
-                <p class="text-sm"><span class="font-medium">Percentage:</span> {profileData.education.twelfthPercentage}</p>
-              </div>
-            </div>
-          {/if}
+         
         </div>
       </div>
 

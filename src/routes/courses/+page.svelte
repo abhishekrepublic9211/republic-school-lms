@@ -1,11 +1,13 @@
 <script lang="ts">
   import { BookOpen, Clock, Users, Star, Filter, Search } from 'lucide-svelte';
   import { courses } from '$lib/stores/courses';
-  import { currentUser } from '$lib/stores/auth';
+  import { authStore } from '$lib/stores/auth';
 
   let searchQuery = '';
   let selectedLevel = '';
   let selectedCategory = '';
+
+  $: currentUser = $authStore.user;
 
   // Filter courses based on search and filters
   $: filteredCourses = $courses.filter(course => {
