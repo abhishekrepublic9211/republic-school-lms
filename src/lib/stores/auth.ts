@@ -134,12 +134,14 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  userId:string | null;
 }
 
 const initialAuthState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
+  userId:null,
 };
 
 const createAuthStore = () => {
@@ -152,7 +154,7 @@ const createAuthStore = () => {
       localStorage.setItem('userId', userToStore._id);
       localStorage.setItem('authToken', token);
       localStorage.setItem('authUser', JSON.stringify(userToStore));
-      set({ user: userToStore, token, isAuthenticated: true });
+      set({ user: userToStore, token, isAuthenticated: true,userId:userToStore._id });
     },
     logout: () => {
       localStorage.removeItem('authToken');
@@ -165,13 +167,14 @@ const createAuthStore = () => {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('authToken');
         const storedUser = localStorage.getItem('authUser');
+        const userId = localStorage.getItem('userId');
         
         if (token && storedUser) {
           try {
             let user: User = JSON.parse(storedUser);
            
             user = { ...user, id: user._id || user.id };
-            set({ user, token, isAuthenticated: true });
+            set({ user, token, isAuthenticated: true, userId: user._id });
           } catch (error) {
             console.error('Failed to parse stored user:', error);
             localStorage.removeItem('authToken');

@@ -1,12 +1,15 @@
 <script lang="ts">
   import { Send, Search, Phone, Video, MoreVertical, Paperclip, Smile } from 'lucide-svelte';
   import { chatRooms, currentChatRoom, chatMessages } from '$lib/stores/chat';
-  import { currentUser } from '$lib/stores/auth';
+ import { authStore } from '$lib/stores/auth';
   import type { ChatRoom, ChatMessage } from '$lib/stores/chat';
+    import { derived } from 'svelte/store';
 
   let selectedRoom: ChatRoom | null = null;
   let newMessage = '';
   let searchQuery = '';
+
+  const currentUser = derived(authStore, $auth => $auth.user);
 
   // Filter chat rooms based on search
   $: filteredRooms = $chatRooms.filter(room => 

@@ -156,11 +156,11 @@
   {/if}
 
   <!-- Welcome Header -->
-  <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
+  <div class="bg-gradient-to-r from-republic-600 to-republic-700 rounded-xl p-6 text-white">
     <h1 class="text-2xl font-bold mb-2">Welcome back, {$currentUser?.personal?.name ||$currentUser?.fullName|| 'Student'}!</h1>
-    <p class="text-primary-100">Ready to continue your journalism journey? Let's see what's new today.</p>
+    <p class="text-white-100">Ready to continue your journalism journey? Let's see what's new today.</p>
     {#if currentUser}
-      <div class="mt-3 text-sm text-primary-100">
+      <div class="mt-3 text-sm text-white-100">
         <span class="font-medium">{currentUser.department}</span> • 
         <span>{currentUser.semester} {currentUser.academicYear}</span> • 
         <span>ID: {currentUser.studentId}</span>
@@ -177,7 +177,7 @@
           <p class="text-2xl font-bold text-gray-900">{enrolledCourses.length}</p>
         </div>
         <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-          <BookOpen class="w-6 h-6 text-primary-600" />
+          <BookOpen class="w-6 h-6 text-white-600" />
         </div>
       </div>
     </div>
@@ -242,16 +242,16 @@
                     <div class="flex-1 mr-4">
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-xs text-gray-500">Progress</span>
-                        <span class="text-xs font-medium text-primary-600">{course.progress}%</span>
+                        <span class="text-xs font-medium text-white-600">{course.progress}%</span>
                       </div>
                       <div class="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          class="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                          class="bg-republic-600 h-2 rounded-full transition-all duration-300"
                           style="width: {course.progress}%"
                         ></div>
                       </div>
                     </div>
-                    <a href="/courses/{course.id}" class="btn btn-primary text-sm px-4 py-2">
+                    <a href="/courses/{course.id}" class="btn btn-republic text-sm px-4 py-2">
                       Continue
                     </a>
                   </div>
@@ -284,7 +284,7 @@
             </div>
           {/each}
         </div>
-        <a href="/assignments" class="block mt-4 text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/assignments" class="block mt-4 text-center text-sm text-white-600 hover:text-white-700 font-medium">
           View All Assignments
         </a>
       </div>
@@ -309,7 +309,7 @@
             </div>
           {/each}
         </div>
-        <a href="/grades" class="block mt-4 text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/grades" class="block mt-4 text-center text-sm text-white-600 hover:text-white-700 font-medium">
           View All Grades
         </a>
       </div>

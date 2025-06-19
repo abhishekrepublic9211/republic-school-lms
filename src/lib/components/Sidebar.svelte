@@ -26,7 +26,8 @@
   export let isOpen = false;
 
    $: currentUser = $authStore.user;
-  console.log("current user =",currentUser)
+  console.log("current user from profile =",currentUser)
+  
 
 
 
@@ -40,20 +41,20 @@
     { id: 'nav-assignments', href: '/assignments', label: 'Assignments', icon: FileText },
     { id: 'nav-lectures', href: '/lectures', label: 'Lectures', icon: Users },
     { id: 'nav-attendance', href: '/attendance', label: 'Attendance', icon: CheckSquare },
-    { id: 'nav-grades', href: '/grades', label: 'Grades', icon: BarChart3 },
+    // { id: 'nav-grades', href: '/grades', label: 'Grades', icon: BarChart3 },
     { id: 'nav-calendar', href: '/calendar', label: 'Calendar', icon: Calendar },
-    { id: 'nav-chat', href: '/chat', label: 'Chat', icon: MessageCircle },
-    { id: 'nav-doubts', href: '/doubts', label: 'Doubts', icon: HelpCircle },
-    { id: 'nav-feedback', href: '/feedback', label: 'Feedback', icon: MessageSquare },
+    // { id: 'nav-chat', href: '/chat', label: 'Chat', icon: MessageCircle },
+    // { id: 'nav-doubts', href: '/doubts', label: 'Doubts', icon: HelpCircle },
+    // { id: 'nav-feedback', href: '/feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
   // Payment section items
-  const paymentItems = [
-    { id: 'nav-payments', href: '/payments', label: 'Payment Overview', icon: CreditCard },
-    { id: 'nav-payment-methods', href: '/payments?tab=methods', label: 'Payment Methods', icon: Wallet },
-    { id: 'nav-payment-history', href: '/payments?tab=history', label: 'Transaction History', icon: Receipt },
-    { id: 'nav-invoices', href: '/payments?tab=invoices', label: 'Invoices & Receipts', icon: FileText }
-  ];
+  // const paymentItems = [
+  //   { id: 'nav-payments', href: '/payments', label: 'Payment Overview', icon: CreditCard },
+  //   { id: 'nav-payment-methods', href: '/payments?tab=methods', label: 'Payment Methods', icon: Wallet },
+  //   { id: 'nav-payment-history', href: '/payments?tab=history', label: 'Transaction History', icon: Receipt },
+  //   { id: 'nav-invoices', href: '/payments?tab=invoices', label: 'Invoices & Receipts', icon: FileText }
+  // ];
 
   // Settings section
   const settingsItems = [
@@ -176,8 +177,8 @@
       {/each}
       </div>
 
-      <!-- Payment Section -->
-      <div class="pt-4">
+    
+      <!-- <div class="pt-4">
         <div class="px-4 mb-2">
           <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Payments & Billing</h4>
         </div>
@@ -196,17 +197,17 @@
               />
               <span class="text-sm font-medium transition-colors duration-200">{item.label}</span>
               
-              <!-- Active indicator -->
+            
               {#if isPaymentItemActive(item.href)}
                 <div class="ml-auto w-2 h-2 bg-primary-600 rounded-full animate-pulse-subtle"></div>
               {/if}
             </a>
           {/each}
         </div>
-      </div>
+      </div> -->
 
       <!-- Settings Section -->
-      <div class="pt-4 border-t border-gray-100 mt-4">
+      <!-- <div class="pt-4 border-t border-gray-100 mt-4">
         <div class="space-y-1">
           {#each settingsItems as item}
             <a
@@ -222,14 +223,14 @@
               />
               <span class="font-medium transition-colors duration-200">{item.label}</span>
               
-              <!-- Active indicator -->
+              
               {#if isPathActive(item.href)}
                 <div class="ml-auto w-2 h-2 bg-primary-600 rounded-full animate-pulse-subtle"></div>
               {/if}
             </a>
           {/each}
         </div>
-      </div>
+      </div> -->
     </nav>
   </div>
 </aside>

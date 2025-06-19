@@ -43,6 +43,10 @@
   .btn-secondary {
     @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
   }
+
+   .btn-republic {
+    @apply btn bg-republic-200 text-white hover:bg-republic-300 focus:ring-republic-500;
+  }
   
   .card {
     @apply bg-white rounded-xl shadow-lg border border-gray-100 transition-all duration-200;
@@ -78,7 +82,7 @@
   
   /* Navigation animations */
   .nav-item-active {
-    @apply bg-primary-100 text-primary-700 border-r-4 border-primary-600 shadow-sm;
+    @apply bg-republic-100 text-white border-r-4 border-republic-600 shadow-sm;
   }
   
   .nav-item-inactive {

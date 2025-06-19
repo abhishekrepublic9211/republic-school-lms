@@ -647,7 +647,7 @@ onMount(async () => {
       />
       <label
         for="avatar-upload"
-        class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-colors duration-200 cursor-pointer"
+        class="w-8 h-8 bg-republic-600 rounded-full flex items-center justify-center text-white hover:bg-republic-700 transition-colors duration-200 cursor-pointer"
       >
         <Edit class="w-4 h-4" />
       </label>
@@ -659,7 +659,7 @@ onMount(async () => {
       <button
         on:click={uploadAvatar}
         disabled={isSaving}
-        class="btn btn-primary text-xs px-3 py-1 disabled:opacity-50"
+        class="btn btn-republic text-xs px-3 py-1 disabled:opacity-50"
       >
         {isSaving ? 'Uploading...' : 'Upload'}
       </button>
@@ -715,11 +715,11 @@ onMount(async () => {
         <div class="mb-4">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-gray-700">Profile Completion</span>
-            <span class="text-sm font-bold text-primary-600">{completionPercentage}%</span>
+            <span class="text-sm font-bold text-republic-600">{completionPercentage}%</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-3">
             <div 
-              class="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500"
+              class="bg-gradient-to-r from-republic-500 to-republic-600 h-3 rounded-full transition-all duration-500"
               style="width: {completionPercentage}%"
             ></div>
           </div>
@@ -733,7 +733,7 @@ onMount(async () => {
            
             disabled={isSaving}
 
-            class="btn btn-primary disabled:opacity-50 flex items-center space-x-2"
+            class="btn btn-republic disabled:opacity-50 flex items-center space-x-2"
           >
             {#if isSaving}
               <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -755,7 +755,7 @@ onMount(async () => {
           <button 
             on:click={toggleEdit}
           
-            class="btn btn-primary flex items-center space-x-2"
+            class="btn btn-republic flex items-center space-x-2"
           >
             <Edit class="w-4 h-4" />
             <span>Edit Profile</span>
@@ -784,7 +784,7 @@ onMount(async () => {
               <button
                 class="w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg transition-colors duration-200 {
                   activeSection === section.id 
-                    ? 'bg-primary-100 text-primary-700 border-r-4 border-primary-600' 
+                    ? 'bg-republic-100 text-white border-r-4 border-republic-600' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }"
                 on:click={() => activeSection = section.id}
@@ -808,7 +808,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.personal.name}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                   required
                 />
               </div>
@@ -817,7 +817,7 @@ onMount(async () => {
                 <input
                   type="tel"
                   bind:value={profileData.personal.phone}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -825,14 +825,14 @@ onMount(async () => {
                 <input
                   type="date"
                   bind:value={profileData.personal.dateOfBirth}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                 <select
                   bind:value={profileData.personal.gender}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
@@ -846,7 +846,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.personal.nationality}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -854,14 +854,14 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.personal.religion}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select
                   bind:value={profileData.personal.category}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Category</option>
                   <option value="General">General</option>
@@ -875,7 +875,7 @@ onMount(async () => {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Marital Status</label>
                 <select
                   bind:value={profileData.personal.maritalStatus}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Status</option>
                   <option value="Single">Single</option>
@@ -896,7 +896,7 @@ onMount(async () => {
                     <textarea
                       bind:value={profileData.address.currentAddress}
                       rows="3"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     ></textarea>
                   </div>
                   <div>
@@ -904,7 +904,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.address.currentCity}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                   <div>
@@ -912,7 +912,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.address.currentState}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                   <div>
@@ -920,7 +920,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.address.currentPincode}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                 </div>
@@ -932,7 +932,7 @@ onMount(async () => {
                     type="checkbox"
                     id="sameAsCurrent"
                     bind:checked={profileData.address.sameAsCurrent}
-                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    class="rounded border-gray-300 text-republic-600 focus:ring-republic-500"
                   />
                   <label for="sameAsCurrent" class="text-sm font-medium text-gray-700">
                     Permanent address is same as current address
@@ -947,7 +947,7 @@ onMount(async () => {
                       <textarea
                         bind:value={profileData.address.permanentAddress}
                         rows="3"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                       ></textarea>
                     </div>
                     <div>
@@ -955,7 +955,7 @@ onMount(async () => {
                       <input
                         type="text"
                         bind:value={profileData.address.permanentCity}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                       />
                     </div>
                     <div>
@@ -963,7 +963,7 @@ onMount(async () => {
                       <input
                         type="text"
                         bind:value={profileData.address.permanentState}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                       />
                     </div>
                     <div>
@@ -971,7 +971,7 @@ onMount(async () => {
                       <input
                         type="text"
                         bind:value={profileData.address.permanentPincode}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                       />
                     </div>
                   </div>
@@ -989,7 +989,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.education.lastQualificationDegree}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                   <div>
@@ -997,7 +997,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.education.lastQualificationUniversity}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                   <div>
@@ -1005,7 +1005,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.education.lastQualificationYear}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
                 </div>
@@ -1022,7 +1022,7 @@ onMount(async () => {
                     <input
                       type="text"
                       bind:value={profileData.education.lastQualificationPercentage}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                     />
                   </div>
               
@@ -1036,14 +1036,14 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.parentGuardian.name}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Relationship</label>
                 <select
                   bind:value={profileData.parentGuardian.relationship}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Relationship</option>
                   <option value="Father">Father</option>
@@ -1057,7 +1057,7 @@ onMount(async () => {
                 <input
                   type="tel"
                   bind:value={profileData.parentGuardian.contactNumber}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1065,7 +1065,7 @@ onMount(async () => {
                 <input
                   type="email"
                   bind:value={profileData.parentGuardian.email}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1073,7 +1073,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.parentGuardian.occupation}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1081,7 +1081,7 @@ onMount(async () => {
                 <textarea
                   bind:value={profileData.parentGuardian.address}
                   rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
             </div>
@@ -1093,7 +1093,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.emergencyContact.name}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1101,7 +1101,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.emergencyContact.relationship}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1109,7 +1109,7 @@ onMount(async () => {
                 <input
                   type="tel"
                   bind:value={profileData.emergencyContact.contactNumber}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1117,7 +1117,7 @@ onMount(async () => {
                 <input
                   type="email"
                   bind:value={profileData.emergencyContact.email}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div class="md:col-span-2">
@@ -1125,7 +1125,7 @@ onMount(async () => {
                 <textarea
                   bind:value={profileData.emergencyContact.address}
                   rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
             </div>
@@ -1136,7 +1136,7 @@ onMount(async () => {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
                 <select
                   bind:value={profileData.medical.bloodGroup}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Blood Group</option>
                   <option value="A+">A+</option>
@@ -1155,7 +1155,7 @@ onMount(async () => {
                   bind:value={profileData.medical.medicalConditions}
                   rows="3"
                   placeholder="List any medical conditions or write 'None'"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1164,7 +1164,7 @@ onMount(async () => {
                   bind:value={profileData.medical.allergies}
                   rows="3"
                   placeholder="List any allergies or write 'None'"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1173,7 +1173,7 @@ onMount(async () => {
                   bind:value={profileData.medical.medications}
                   rows="3"
                   placeholder="List current medications or write 'None'"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
             </div>
@@ -1184,7 +1184,7 @@ onMount(async () => {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Current Employment Status</label>
                 <select
                   bind:value={profileData.professional.currentEmployment}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Status</option>
                   <option value="Student">Student</option>
@@ -1199,7 +1199,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.professional.designation}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1207,7 +1207,7 @@ onMount(async () => {
                 <input
                   type="text"
                   bind:value={profileData.professional.organization}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div>
@@ -1216,7 +1216,7 @@ onMount(async () => {
                   type="text"
                   bind:value={profileData.professional.workExperience}
                   placeholder="e.g., 2 years"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
 
@@ -1226,7 +1226,7 @@ onMount(async () => {
                   type="text"
                   bind:value={profileData.professional.previousEmployment}
                   
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 />
               </div>
               <div class="md:col-span-2">
@@ -1235,7 +1235,7 @@ onMount(async () => {
                   bind:value={profileData.professional.skills}
                   rows="3"
                   placeholder="List your professional skills"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
             </div>
@@ -1248,7 +1248,7 @@ onMount(async () => {
                   bind:value={profileData.learning.courseInterests}
                   rows="3"
                   placeholder="What courses are you interested in?"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1257,7 +1257,7 @@ onMount(async () => {
                   bind:value={profileData.learning.careerGoals}
                   rows="3"
                   placeholder="What are your career aspirations?"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1266,14 +1266,14 @@ onMount(async () => {
                   bind:value={profileData.learning.technicalSkills}
                   rows="3"
                   placeholder="List your technical skills"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Learning Style</label>
                 <select
                   bind:value={profileData.learning.preferredLearningStyle}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 >
                   <option value="">Select Learning Style</option>
                   <option value="Visual">Visual</option>
@@ -1290,7 +1290,7 @@ onMount(async () => {
                   bind:value={profileData.learning.expectations}
                   rows="3"
                   placeholder="List your technical skills"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
 
@@ -1305,7 +1305,7 @@ onMount(async () => {
                   bind:value={profileData.additional.languages}
                   rows="2"
                   placeholder="e.g., English (Native), Spanish (Intermediate)"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1314,7 +1314,7 @@ onMount(async () => {
                   bind:value={profileData.additional.hobbies}
                   rows="3"
                   placeholder="List your hobbies and interests"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1323,7 +1323,7 @@ onMount(async () => {
                   bind:value={profileData.additional.achievements}
                   rows="3"
                   placeholder="List your notable achievements"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
               <div>
@@ -1332,7 +1332,7 @@ onMount(async () => {
                   bind:value={profileData.additional.extracurricular}
                   rows="3"
                   placeholder="List your extracurricular activities"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
                 <div>
@@ -1341,7 +1341,7 @@ onMount(async () => {
                   bind:value={profileData.additional.socialMedia}
                   rows="3"
                   placeholder="List your extracurricular activities"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
                 ></textarea>
               </div>
             </div>
@@ -1356,7 +1356,7 @@ onMount(async () => {
       <!-- Personal Information -->
       <div class="card p-6">
         <div class="flex items-center space-x-2 mb-4">
-          <UserIcon class="w-5 h-5 text-primary-600" />
+          <UserIcon class="w-5 h-5 text-republic-600" />
           <h2 class="text-xl font-bold text-gray-900">Personal Information</h2>
         </div>
         <div class="space-y-3">
@@ -1400,7 +1400,7 @@ onMount(async () => {
       <!-- Contact Information -->
       <div class="card p-6">
         <div class="flex items-center space-x-2 mb-4">
-          <Phone class="w-5 h-5 text-primary-600" />
+          <Phone class="w-5 h-5 text-republic-600" />
           <h2 class="text-xl font-bold text-gray-900">Contact Information</h2>
         </div>
         <div class="space-y-3">
@@ -1436,7 +1436,7 @@ onMount(async () => {
       <!-- Educational Background -->
       <div class="card p-6">
         <div class="flex items-center space-x-2 mb-4">
-          <BookOpen class="w-5 h-5 text-primary-600" />
+          <BookOpen class="w-5 h-5 text-republic-600" />
           <h2 class="text-xl font-bold text-gray-900">Educational Background</h2>
         </div>
         <div class="space-y-4">
@@ -1469,7 +1469,7 @@ onMount(async () => {
       <!-- Medical Information -->
       <div class="card p-6">
         <div class="flex items-center space-x-2 mb-4">
-          <Heart class="w-5 h-5 text-primary-600" />
+          <Heart class="w-5 h-5 text-republic-600" />
           <h2 class="text-xl font-bold text-gray-900">Medical Information</h2>
         </div>
         <div class="space-y-3">

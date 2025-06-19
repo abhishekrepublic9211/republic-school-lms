@@ -41,7 +41,7 @@
 			<!-- Logo and Page Title -->
 			<div class="flex items-center space-x-4">
 				<a href="/" class="flex items-center space-x-3">
-					<div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+					<div class="w-10 h-10 bg-republic-600 rounded-lg flex items-center justify-center">
 						<span class="text-white font-bold text-xl">R</span>
 					</div>
 					<div class="hidden sm:block">
@@ -68,12 +68,12 @@
 						</span>
 					</a>
 				</div>
-				<button on:click={handleLogout} class="text-gray-600 hover:text-purple-600 flex items-center space-x-1 text-sm">
+				<button on:click={handleLogout} class="text-gray-600 hover:text-republic-600 flex items-center space-x-1 text-sm">
 					<LogOut class="w-4 h-4" />
 					<span>Sign Out</span>
 				</button>
 			{:else}
-				<a href="/login" class="text-gray-600 hover:text-purple-600 flex items-center space-x-1 text-sm">
+				<a href="/login" class="text-gray-600 hover:text-republic-600 flex items-center space-x-1 text-sm">
 					<LogIn class="w-4 h-4" />
 					<span>Login</span>
 				</a>

@@ -58,13 +58,13 @@
           type="text"
           placeholder="Search courses..."
           bind:value={searchQuery}
-          class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
         />
       </div>
       
       <select
         bind:value={selectedLevel}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Levels</option>
         <option value="Beginner">Beginner</option>
@@ -74,7 +74,7 @@
       
       <select
         bind:value={selectedCategory}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Categories</option>
         <option value="Digital Media">Digital Media</option>
@@ -98,7 +98,7 @@
             />
             
             <div class="flex items-start justify-between mb-2">
-              <span class="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+              <span class="px-2 py-1 text-xs font-medium bg-republic-100 text-white-700 rounded-full">
                 {course.level}
               </span>
               <div class="flex items-center space-x-1">
@@ -125,11 +125,11 @@
             <div class="mb-4">
               <div class="flex items-center justify-between mb-1">
                 <span class="text-sm font-medium text-gray-700">Progress</span>
-                <span class="text-sm font-bold text-primary-600">{course.progress}%</span>
+                <span class="text-sm font-bold text-republic-600">{course.progress}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  class="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                  class="bg-republic-600 h-2 rounded-full transition-all duration-300"
                   style="width: {course.progress}%"
                 ></div>
               </div>
@@ -137,7 +137,7 @@
             
             <button 
               on:click={() => continueCourse(course.id)}
-              class="w-full btn btn-primary"
+              class="w-full btn btn-republic"
             >
               Continue Learning
             </button>
@@ -200,7 +200,7 @@
             
             <button 
               on:click={() => enrollInCourse(course.id)}
-              class="w-full btn btn-primary"
+              class="w-full btn btn-republic"
             >
               Enroll Now
             </button>
