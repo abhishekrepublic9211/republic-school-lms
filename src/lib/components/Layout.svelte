@@ -10,10 +10,12 @@
 
   let sidebarOpen = false;
 
+
   onMount(() => {
     // Redirect to login if not authenticated and not on login page
     const unsubscribe = isAuthenticated.subscribe(auth => {
-      if (!auth && window.location.hash !== '#/login' && window.location.hash !== '#/') {
+      console.log("checking authentication status in layout svelte:", auth);
+      if (!auth) {
         push('/login');
       }
     });

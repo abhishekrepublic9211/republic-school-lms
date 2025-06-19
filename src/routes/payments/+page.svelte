@@ -100,7 +100,7 @@
     
     <button 
       on:click={addPaymentMethod}
-      class="mt-4 md:mt-0 btn btn-primary flex items-center space-x-2"
+      class="mt-4 md:mt-0 btn btn-republic flex items-center space-x-2"
     >
       <Plus class="w-4 h-4" />
       <span>Add Payment Method</span>
@@ -111,25 +111,25 @@
   <div class="border-b border-gray-200">
     <nav class="-mb-px flex space-x-8">
       <button
-        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'overview' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'overview' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
         on:click={() => changeTab('overview')}
       >
         Overview
       </button>
       <button
-        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'methods' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'methods' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
         on:click={() => changeTab('methods')}
       >
         Payment Methods
       </button>
       <button
-        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'history' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'history' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
         on:click={() => changeTab('history')}
       >
         Transaction History
       </button>
       <button
-        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'invoices' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+        class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {selectedTab === 'invoices' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
         on:click={() => changeTab('invoices')}
       >
         Invoices & Receipts
@@ -225,7 +225,7 @@
                   {#if payment.status === 'pending' || payment.status === 'partial'}
                     <button 
                       on:click={() => makePayment(payment.courseId)}
-                      class="btn btn-primary text-sm px-4 py-2"
+                      class="btn btn-republic text-sm px-4 py-2"
                     >
                       {payment.status === 'partial' ? 'Pay Remaining' : 'Make Payment'}
                     </button>
@@ -250,7 +250,7 @@
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      class="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                      class="bg-republic-600 h-2 rounded-full transition-all duration-300"
                       style="width: {(payment.paidAmount / payment.totalAmount) * 100}%"
                     ></div>
                   </div>
@@ -270,13 +270,13 @@
           </div>
           <nav class="px-6 -mb-px flex space-x-8">
             <button
-              class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {activityTab === 'transactions' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+              class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {activityTab === 'transactions' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
               on:click={() => activityTab = 'transactions'}
             >
               Recent Transactions
             </button>
             <button
-              class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {activityTab === 'status' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+              class="py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {activityTab === 'status' ? 'border-republic-500 text-republic-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
               on:click={() => activityTab = 'status'}
             >
               Current Status
@@ -292,7 +292,7 @@
                 <p class="text-sm text-gray-600">Latest payment activities</p>
                 <button 
                   on:click={() => changeTab('history')}
-                  class="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  class="text-sm text-republic-600 hover:text-republic-700 font-medium"
                 >
                   View All
                 </button>
@@ -401,7 +401,7 @@
                         <span class="text-sm text-gray-700">{method.type} •••• {method.last4}</span>
                       </div>
                       {#if method.isDefault}
-                        <span class="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+                        <span class="px-2 py-1 text-xs font-medium bg-republic-100 text-primary-700 rounded-full">
                           Default
                         </span>
                       {/if}
@@ -423,7 +423,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           {#each $payments.paymentMethods as method}
             {@const Icon = getPaymentMethodIcon(method.type)}
-            <div class="border border-gray-200 rounded-lg p-4 {method.isDefault ? 'ring-2 ring-primary-500' : ''}">
+            <div class="border border-gray-200 rounded-lg p-4 {method.isDefault ? 'ring-2 ring-republic-500' : ''}">
               <div class="flex items-start justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -436,7 +436,7 @@
                   </div>
                 </div>
                 {#if method.isDefault}
-                  <span class="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+                  <span class="px-2 py-1 text-xs font-medium bg-republic-100 text-primary-700 rounded-full">
                     Default
                   </span>
                 {/if}
@@ -550,7 +550,7 @@
               </div>
               <button 
                 on:click={() => downloadReceipt(transaction.receiptUrl)}
-                class="btn btn-secondary flex items-center space-x-2"
+                class="btn btn-republic flex items-center space-x-2"
               >
                 <Download class="w-4 h-4" />
                 <span>Download</span>
@@ -617,14 +617,14 @@
         {#if selectedTransaction.receiptUrl}
           <button 
             on:click={() => downloadReceipt(selectedTransaction.receiptUrl)}
-            class="btn btn-secondary"
+            class="btn btn-republic"
           >
             Download Receipt
           </button>
         {/if}
         <button 
           on:click={closeTransactionModal}
-          class="btn btn-primary"
+          class="btn btn-republic"
         >
           Close
         </button>

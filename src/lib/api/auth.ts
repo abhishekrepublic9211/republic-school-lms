@@ -1,9 +1,26 @@
-import { mockAPI, type ApiResponse } from './mockService';
+import { mockAPI } from './mockService';
 import type { User } from '$lib/stores/auth';
+
+
+const API_URL = import.meta.env.VITE_API_BASE_URL
+
 
 export interface LoginRequest {
   email: string;
 }
+
+interface emailOtp{
+  email: string;
+  otp: string;
+}
+
+export interface ApiResponse<T = any> {
+  status: number;
+  data?: T;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
 
 export interface VerifyOTPRequest {
   email: string;
@@ -38,24 +55,75 @@ export interface LogoutRequest {
 
 class AuthAPI {
   // Send OTP to user's email
-  async sendOTP(email: string): Promise<ApiResponse<OTPResponse>> {
-    try {
-      return await mockAPI.sendOTP(email);
-    } catch (error: any) {
-      console.error('Send OTP error:', error);
-      throw error;
-    }
-  }
 
-  // Verify OTP and login
-  async verifyOTP(request: VerifyOTPRequest): Promise<ApiResponse<LoginResponse>> {
-    try {
-      return await mockAPI.verifyOTP(request.email, request.otp);
-    } catch (error: any) {
-      console.error('Verify OTP error:', error);
-      throw error;
+
+   async sendOTP(email: string): Promise<ApiResponse> {
+    console.log("Sending OTP to:", email);
+  
+  try{
+      // Simulate validation
+      if (!email || !email.includes('@')) {
+        return {
+          status: 400,
+          message: 'Please enter a valid email address',
+          errors: { email: ['Invalid email format'] }
+        };
+      }
+      else{
+        let response = await fetch(`${API_URL}auth/request-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email:email })
+        });
+        response = await response.json();
+        return response;
+      }
     }
-  }
+    catch(error:any){
+    console.log("Sending OTP error:", error.message);
+
+      throw error
+    }
+
+    }
+  
+    async verifyOTP(email: emailOtp): Promise<ApiResponse> {
+   
+
+      
+      try{
+  
+      // Simulate validation
+      if (!email.email || !email.otp) {
+        return {
+          status: 400,
+          message: 'Email and OTP are required',
+          errors: { otp: ['OTP is required'] }
+        };
+      }
+      else{
+        let response = await fetch(`${API_URL}auth/verify-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email:email.email, otp:email.otp })
+        });
+        response = await response.json();
+        return response;
+      }
+  
+      }
+      catch(error:any){
+        throw error;
+      }
+    }
+
+ 
+
+
 
   // Refresh access token
   async refreshToken(): Promise<ApiResponse<{ token: string; expiresIn: number }>> {

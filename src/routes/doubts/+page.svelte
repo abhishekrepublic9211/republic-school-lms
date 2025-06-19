@@ -1,8 +1,9 @@
 <script lang="ts">
   import { Search, Plus, ThumbsUp, MessageCircle, CheckCircle, Filter } from 'lucide-svelte';
   import { doubts, doubtCategories } from '$lib/stores/doubts';
-  import { currentUser } from '$lib/stores/auth';
+ import { authStore } from '$lib/stores/auth';
   import type { Doubt } from '$lib/stores/doubts';
+    import { derived } from 'svelte/store';
 
   let searchQuery = '';
   let selectedCategory = '';
@@ -12,6 +13,8 @@
   let newDoubtContent = '';
   let newDoubtCategory = '';
   let newDoubtTags = '';
+
+  const currentUser = derived(authStore, $auth => $auth.user);
 
   // Filter doubts
   $: filteredDoubts = $doubts.filter(doubt => {

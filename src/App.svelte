@@ -6,13 +6,18 @@
   import { push } from 'svelte-spa-router';
   import './app.css';
 
+  
+
   onMount(() => {
     // Check authentication status on app load
     const unsubscribe = isAuthenticated.subscribe(auth => {
       const currentPath = window.location.hash.slice(1) || '/';
+
+      console.log("cauth=",auth)
       
+      console.log("checking authentication status in App.svelte:", auth);
       // If not authenticated and trying to access protected routes
-      if (!auth && currentPath !== '/login' && currentPath !== '/') {
+      if (!auth) {
         push('/login');
       }
       // If authenticated and on login page, redirect to dashboard

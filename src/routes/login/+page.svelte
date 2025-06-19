@@ -1,86 +1,99 @@
 <script lang="ts">
-  import { sendOTP, verifyOTP, authLoading, authError } from '$lib/stores/auth';
+ import { authStore, type User } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
   import { Mail, ArrowRight, RefreshCw } from 'lucide-svelte';
+  import { authService, ApiError } from '../../lib/api/api';
 
   let email = '';
   let otp = '';
-  let step = 'email'; // 'email' or 'otp'
+  let step: 'email' | 'otp' = 'email'; // Explicitly define type as union
   let error = '';
   let otpSent = false;
   let countdown = 0;
   let countdownInterval: number;
   let attemptsRemaining = 3;
 
+
+  let isLoading: boolean = false;
+  let errorMessage: string | null = null;
+  let successMessage: string | null = null;
+
+
   // Subscribe to auth stores
-  $: isLoading = $authLoading;
-  $: if ($authError) {
-    error = $authError;
-  }
 
   async function handleSendOTP() {
+    console.log("email in handleSendOTP", email);
     if (!email) {
-      error = 'Please enter your email address';
+      errorMessage = 'Please enter your email address.';
       return;
     }
-
-    if (!email.includes('@')) {
-      error = 'Please enter a valid email address';
-      return;
-    }
-
-    error = '';
-
+    isLoading = true;
+    errorMessage = null;
+    successMessage = null;
     try {
-      const result = await sendOTP(email);
-      
-      if (result.success) {
-        step = 'otp';
+      const response = await authService.requestOtp(email);
+      console.log("otp respinse",response)
+      if (response.data === true) {
+        console.log("otp sent successfully", response);
         otpSent = true;
-        attemptsRemaining = result.attemptsRemaining || 3;
-        startCountdown();
-        error = '';
+        step='otp';
+        successMessage = response.message || 'OTP has been sent to your email.';
       } else {
-        error = result.message || 'Failed to send OTP. Please try again.';
+        errorMessage = response.message || 'Failed to send OTP. Please try again.';
       }
-    } catch (err) {
-      error = 'Network error. Please check your connection and try again.';
+    } catch (error) {
+      if (error instanceof ApiError) {
+        errorMessage = error.data?.message || error.message || 'An error occurred while requesting OTP.';
+      } else {
+        errorMessage = (error as Error).message || 'An unexpected error occurred.';
+      }
+      console.error('Request OTP error:', error);
+    } finally {
+      isLoading = false;
     }
   }
 
   async function handleVerifyOTP() {
-    if (!otp) {
-      error = 'Please enter the OTP';
+    if (!email || !otp) {
+      errorMessage = 'Please enter your email and the OTP.';
       return;
     }
-
-    if (otp.length !== 6) {
-      error = 'OTP must be 6 digits';
-      return;
-    }
-
-    error = '';
-
+    isLoading = true;
+    errorMessage = null;
+    successMessage = null;
     try {
-      const result = await verifyOTP(email, otp);
-      
-      if (result.success) {
-        goto('/dashboard');
-      } else {
-        error = result.message || 'Invalid OTP. Please try again.';
-        otp = '';
-        attemptsRemaining = Math.max(0, attemptsRemaining - 1);
+      const response = await authService.verifyOtp(email, otp);
+      // Backend response structure is { status, message, data: { access_token, user } }
+      if (response.data && response.data.access_token && response.data.user) {
+        const userFromResponse = response.data.user as User; 
+        authStore.login(userFromResponse, response.data.access_token);
+          isLoading = false;
+        successMessage = 'Login successful! Redirecting...';
         
-        if (attemptsRemaining === 0) {
-          step = 'email';
-          otpSent = false;
-          error = 'Too many failed attempts. Please request a new OTP.';
+        // Since isProfileComplete is no longer on the User object from login,
+        // and the user object from OTP verification is minimal,
+        // always redirect to profile edit page to encourage completion or review.
+        // The profile page will fetch full data and can adjust display/edit mode.
+        goto('/dashboard');
+
+      } else {
+        // Use the message from backend if available, otherwise a generic one
+        errorMessage = response.message || 'Login failed. Please check your OTP and try again.';
+        if (response.status === 200 && response.message === 'OTP verified successfully' && (!response.data || !response.data.access_token || !response.data.user)) {
+            // This case means OTP was fine, but token/user data was missing in expected structure
+            errorMessage = 'OTP verified, but login failed to complete. Missing token or user data from server.';
         }
       }
-    } catch (err) {
-      error = 'Network error. Please check your connection and try again.';
-      otp = '';
+    } catch (error) {
+      if (error instanceof ApiError) {
+        errorMessage = error.data?.message || error.message || 'An error occurred during login.';
+      } else {
+        errorMessage = (error as Error).message || 'An unexpected error occurred.';
+      }
+      console.error('Verify OTP error:', error);
+    } finally {
+      isLoading = false;
     }
   }
 
@@ -94,24 +107,24 @@
     }, 1000);
   }
 
-  async function resendOTP() {
-    if (countdown > 0) return;
+  // async function resendOTP() {
+  //   if (countdown > 0) return;
     
-    error = '';
+  //   error = '';
     
-    try {
-      const result = await sendOTP(email);
-      if (result.success) {
-        startCountdown();
-        attemptsRemaining = result.attemptsRemaining || 3;
-        error = '';
-      } else {
-        error = result.message || 'Failed to resend OTP. Please try again.';
-      }
-    } catch (err) {
-      error = 'Network error. Please check your connection and try again.';
-    }
-  }
+  //   try {
+  //     const result = await sendOTP(email);
+  //     if (result.success) {
+  //       startCountdown();
+  //       attemptsRemaining = result.attemptsRemaining || 3;
+  //       error = '';
+  //     } else {
+  //       error = result.message || 'Failed to resend OTP. Please try again.';
+  //     }
+  //   } catch (err) {
+  //     error = 'Network error. Please check your connection and try again.';
+  //   }
+  // }
 
   function goBackToEmail() {
     step = 'email';
@@ -303,7 +316,7 @@
           {:else}
             <button
               type="button"
-              on:click={resendOTP}
+              on:click={handleSendOTP}
               disabled={isLoading || (browser && !navigator.onLine)}
               class="text-sm text-primary-600 hover:text-primary-500 font-medium disabled:opacity-50 flex items-center space-x-1 mx-auto"
             >

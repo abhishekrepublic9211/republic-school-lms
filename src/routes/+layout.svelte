@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { currentUser, isAuthenticated } from '$lib/stores/auth';
   import { initializeNavigation, loadNavigationState } from '$lib/stores/navigation';
+  import { authStore } from '../lib/stores/auth';
   import Navbar from '$lib/components/Navbar.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
   import '../app.css';
@@ -12,26 +12,33 @@
   let showSidebar = true;
   let showNavbar = true;
 
-  // Determine layout based on current route
-  $: {
-    const path = $page.url.pathname;
-    showSidebar = $isAuthenticated && path !== '/login' && path !== '/';
-    showNavbar = true;
-  }
+  $: currentUser = $authStore.user;
+  $: isAuthenticated = $authStore.isAuthenticated;
+  console.log("currentUser layout  =", currentUser);
 
   onMount(() => {
-    // Initialize navigation system
     initializeNavigation();
     loadNavigationState();
-    
-    // Handle route protection
-    const unsubscribe = isAuthenticated.subscribe(auth => {
+
+    // The subscription for currentUser and isAuthenticated is now handled by reactive declarations.
+    // This onMount block is primarily for initial navigation logic.
+    const unsubscribe = authStore.subscribe(auth => {
       const currentPath = $page.url.pathname;
       
-      if (!auth && currentPath !== '/login' && currentPath !== '/') {
+      console.log("isAuthenticated",isAuthenticated)
+     
+      if(isAuthenticated){ // Use isAuthenticated directly
+        console.log("User is authenticated layout:", isAuthenticated,auth);
+         sidebarOpen=true;
+      }
+
+      if (!auth.isAuthenticated) {
         goto('/login');
-      } else if (auth && (currentPath === '/login' || currentPath === '/')) {
+      } 
+      else if (auth.isAuthenticated && (currentPath === '/login' || currentPath === '/')) {
+       
         goto('/dashboard');
+
       }
     });
 
@@ -49,13 +56,13 @@
       <Navbar on:toggleSidebar={toggleSidebar} />
     </div>
   {/if}
-  
-  <div class="flex {showNavbar ? 'pt-16' : ''}">
-    {#if showSidebar && $isAuthenticated}
+
+  <div class="flex" class:pt-16={showNavbar}>
+    {#if showSidebar && isAuthenticated}
       <Sidebar bind:isOpen={sidebarOpen} />
     {/if}
-    
-    <main class="flex-1 {showSidebar && $isAuthenticated ? 'lg:ml-64' : ''} transition-all duration-300 overflow-y-auto max-h-screen">
+
+     <main class="flex-1 {showSidebar && isAuthenticated ? 'lg:ml-64' : ''} transition-all duration-300 overflow-y-auto max-h-screen">
       <slot />
     </main>
   </div>

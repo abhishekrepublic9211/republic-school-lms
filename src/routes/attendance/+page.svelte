@@ -3,7 +3,10 @@
   import { attendanceSummaries, attendanceRecords, getAttendanceStatus } from '$lib/stores/attendance';
   import { lectures } from '$lib/stores/lectures';
   import { courses } from '$lib/stores/courses';
-  import { currentUser } from '$lib/stores/auth';
+import { authStore, type User } from '$lib/stores/auth';
+    import { derived } from 'svelte/store';
+
+ const currentUser = derived(authStore, $auth => $auth.user);
 
   let selectedCourse = '';
 
@@ -38,16 +41,16 @@
 
   function getStatusColor(status: string): string {
     switch (status) {
-      case 'present': return 'text-success-600';
+      case 'present': return 'text-republic-600';
       case 'late': return 'text-warning-600';
       case 'absent': return 'text-error-600';
-      case 'excused': return 'text-blue-600';
+      case 'excused': return 'text-republic-600';
       default: return 'text-gray-600';
     }
   }
 
   function getAttendanceColor(percentage: number): string {
-    if (percentage >= 75) return 'text-success-600';
+    if (percentage >= 75) return 'text-republic-600';
     if (percentage >= 60) return 'text-warning-600';
     return 'text-error-600';
   }
@@ -107,12 +110,12 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-gray-600">Total Lectures</p>
-          <p class="text-2xl font-bold text-gray-900">
+          <p class="text-2xl font-bold text-republic-900">
             {$attendanceSummaries.reduce((sum, summary) => sum + summary.totalLectures, 0)}
           </p>
         </div>
         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-          <Calendar class="w-6 h-6 text-blue-600" />
+          <Calendar class="w-6 h-6 text-republic-600" />
         </div>
       </div>
     </div>
@@ -121,12 +124,12 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-gray-600">Attended</p>
-          <p class="text-2xl font-bold text-success-600">
+          <p class="text-2xl font-bold text-republic-600">
             {$attendanceSummaries.reduce((sum, summary) => sum + summary.attendedLectures, 0)}
           </p>
         </div>
-        <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
-          <CheckSquare class="w-6 h-6 text-success-600" />
+        <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+          <CheckSquare class="w-6 h-6 text-republic-600" />
         </div>
       </div>
     </div>
@@ -176,7 +179,7 @@
             <div class="w-full bg-gray-200 rounded-full h-3">
               <div 
                 class="h-3 rounded-full transition-all duration-300 {
-                  summary.attendancePercentage >= 75 ? 'bg-success-500' :
+                  summary.attendancePercentage >= 75 ? 'bg-republic-500' :
                   summary.attendancePercentage >= 60 ? 'bg-warning-500' : 'bg-error-500'
                 }"
                 style="width: {summary.attendancePercentage}%"
@@ -188,7 +191,7 @@
           <div class="flex items-center justify-between text-sm">
             <span class="text-gray-600">Status:</span>
             <span class="font-medium {
-              summary.attendancePercentage >= 75 ? 'text-success-600' :
+              summary.attendancePercentage >= 75 ? 'text-republic-600' :
               summary.attendancePercentage >= 60 ? 'text-warning-600' : 'text-error-600'
             }">
               {getAttendanceStatus(summary.attendancePercentage)}
@@ -196,7 +199,7 @@
           </div>
           
           {#if summary.excusedAbsences > 0}
-            <div class="mt-2 text-sm text-blue-600">
+            <div class="mt-2 text-sm text-republic-600">
               {summary.excusedAbsences} excused absence{summary.excusedAbsences !== 1 ? 's' : ''}
             </div>
           {/if}

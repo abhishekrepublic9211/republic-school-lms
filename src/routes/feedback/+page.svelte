@@ -2,12 +2,15 @@
   import { Star, Send, Filter, TrendingUp, MessageSquare } from 'lucide-svelte';
   import { courseFeedback, feedbackSummaries, calculateOverallRating, getFeedbackColor } from '$lib/stores/feedback';
   import { courses } from '$lib/stores/courses';
-  import { currentUser } from '$lib/stores/auth';
+  import { authStore } from '$lib/stores/auth';
   import type { FeedbackEntry } from '$lib/stores/feedback';
+    import { derived } from 'svelte/store';
 
   let selectedTab = 'submit'; // 'submit', 'history', 'analytics'
   let selectedCourse = '';
   let showFeedbackForm = false;
+
+  const currentUser = derived(authStore, $auth => $auth.user);
   
   // Feedback form data
   let feedbackCourse = '';

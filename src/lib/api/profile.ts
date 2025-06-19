@@ -1,6 +1,8 @@
 import { mockAPI, type ApiResponse } from './mockService';
 import type { User } from '$lib/stores/auth';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL
+
 export interface ProfileUpdateRequest {
   personal?: {
     name?: string;
@@ -100,6 +102,7 @@ export interface ProfileUpdateRequest {
 }
 
 export interface ProfileResponse extends User {
+  success:boolean;
   profileData?: ProfileUpdateRequest;
   completionPercentage: number;
   lastUpdated: string;
@@ -117,9 +120,19 @@ export interface ProfileValidationError {
 
 class ProfileAPI {
   // Get complete profile data
-  async getProfile(): Promise<ApiResponse<ProfileResponse>> {
+  async getProfile(id:string): Promise<ApiResponse<ProfileResponse>> {
     try {
-      return await mockAPI.getProfile();
+      let response = await fetch(`${API_URL}users/get/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      response = await response.json()
+
+      console.log("response",response)
+      return response
     } catch (error: any) {
       console.error('Get profile error:', error);
       throw error;

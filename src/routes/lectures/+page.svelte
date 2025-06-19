@@ -2,10 +2,14 @@
   import { Calendar, Clock, Users, MapPin, Play, Download, MessageCircle } from 'lucide-svelte';
   import { lectures } from '$lib/stores/lectures';
   import { attendanceRecords } from '$lib/stores/attendance';
-  import { currentUser } from '$lib/stores/auth';
+  import { authStore } from '$lib/stores/auth';
+    import { derived } from 'svelte/store';
 
   let selectedDate = '';
   let selectedCourse = '';
+
+  const currentUser = derived(authStore, $auth => $auth.user);
+  console.log("Current user in lectures page:", currentUser);
 
   // Filter lectures
   $: filteredLectures = $lectures.filter(lecture => {
@@ -76,12 +80,12 @@
       <input
         type="date"
         bind:value={selectedDate}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       />
       
       <select
         bind:value={selectedCourse}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Courses</option>
         {#each uniqueCourses as course}
@@ -97,14 +101,14 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Today's Lectures</h2>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {#each todaysLectures as lecture}
-          <div class="card p-6 border-l-4 border-primary-500">
+          <div class="card p-6 border-l-4 border-republic-500">
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">{lecture.title}</h3>
                 <p class="text-sm text-gray-600 mb-2">{lecture.courseName}</p>
                 <p class="text-sm text-gray-500">{lecture.description}</p>
               </div>
-              <span class="px-3 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+              <span class="px-3 py-1 text-xs font-medium bg-republic-100 text-primary-700 rounded-full">
                 Today
               </span>
             </div>
@@ -130,7 +134,7 @@
             
             <button 
               on:click={() => joinLecture(lecture.id)}
-              class="w-full btn btn-primary"
+              class="w-full btn btn-republic"
             >
               Join Lecture
             </button>
@@ -265,7 +269,7 @@
               {#if lecture.recordingUrl}
                 <button 
                   on:click={() => watchRecording(lecture.recordingUrl)}
-                  class="btn btn-primary flex items-center space-x-2"
+                  class="btn btn-republic flex items-center space-x-2"
                 >
                   <Play class="w-4 h-4" />
                   <span>Watch Recording</span>

@@ -1,9 +1,12 @@
 <script lang="ts">
   import { Save, Bell, Shield, Palette, Globe, Download, Trash2, Eye, EyeOff } from 'lucide-svelte';
-  import { currentUser, updateUser } from '$lib/stores/auth';
+  import { authStore } from '$lib/stores/auth';
+    import { derived } from 'svelte/store';
 
   let selectedTab = 'profile'; // 'profile', 'notifications', 'privacy', 'appearance', 'account'
   
+
+  const currentUser = derived(authStore, $auth => $auth.user);
   // Profile settings
   let profileData = {
     name: $currentUser?.name || '',
@@ -60,7 +63,7 @@
         ...$currentUser,
         ...profileData
       };
-      updateUser(updatedUser);
+      // updateUser(updatedUser);
     }
     console.log('Profile settings saved:', profileData);
   }

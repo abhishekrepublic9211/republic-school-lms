@@ -73,7 +73,7 @@
     <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4">
       <select
         bind:value={selectedStatus}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Status</option>
         <option value="pending">Pending</option>
@@ -84,7 +84,7 @@
       
       <select
         bind:value={selectedType}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Types</option>
         <option value="assignment">Assignment</option>
@@ -94,7 +94,7 @@
       
       <select
         bind:value={selectedPriority}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-republic-500 focus:border-republic-500"
       >
         <option value="">All Priority</option>
         <option value="high">High</option>
@@ -235,7 +235,7 @@
               {#if assignment.status === 'pending'}
                 <button 
                   on:click={() => startAssignment(assignment.id)}
-                  class="btn btn-primary"
+                  class="btn btn-republic"
                 >
                   Start {assignment.type === 'assignment' ? 'Assignment' : assignment.type === 'test' ? 'Test' : 'Project'}
                 </button>
